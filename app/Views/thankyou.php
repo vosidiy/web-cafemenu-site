@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>CafeMenu.uz - Thanks</title>
+    <meta name="robots" content="noindex,nofollow">
     <link href="final.min.css" rel="stylesheet">
 </head>
 <body>

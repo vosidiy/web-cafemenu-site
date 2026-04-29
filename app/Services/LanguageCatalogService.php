@@ -10,19 +10,26 @@ class LanguageCatalogService
     public function getSupportedLanguagesIndexed(): array
     {
         return [
-            'ru' => [
-                'code'         => 'ru',
-                'label'        => 'Russian',
-                'native_label' => 'Русский',
-                'dir'          => 'ltr',
-                'flag'         => '🇷🇺',
-            ],
             'en' => [
                 'code'         => 'en',
                 'label'        => 'English',
                 'native_label' => 'English',
                 'dir'          => 'ltr',
                 'flag'         => '🇬🇧',
+            ],
+            'tr' => [
+                'code'         => 'tr',
+                'label'        => 'Turkish',
+                'native_label' => 'Türkçe',
+                'dir'          => 'ltr',
+                'flag'         => '🇹🇷',
+            ],
+            'ru' => [
+                'code'         => 'ru',
+                'label'        => 'Russian',
+                'native_label' => 'Русский',
+                'dir'          => 'ltr',
+                'flag'         => '🇷🇺',
             ],
             'uz' => [
                 'code'         => 'uz',
@@ -44,13 +51,6 @@ class LanguageCatalogService
                 'native_label' => '中文',
                 'dir'          => 'ltr',
                 'flag'         => '🇨🇳',
-            ],
-            'tr' => [
-                'code'         => 'tr',
-                'label'        => 'Turkish',
-                'native_label' => 'Türkçe',
-                'dir'          => 'ltr',
-                'flag'         => '🇹🇷',
             ],
             'ko' => [
                 'code'         => 'ko',

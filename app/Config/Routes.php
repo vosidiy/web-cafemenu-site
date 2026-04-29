@@ -7,6 +7,7 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('ru', 'Home::index_ru'); 
+$routes->get('sitemap.xml', 'SitemapController::index');
 
 $routes->view('thankyou', 'thankyou'); // uri and pagename
 

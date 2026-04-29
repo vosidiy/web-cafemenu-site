@@ -1,213 +1,93 @@
-DEBUG - 2026-04-29 13:47:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:47:44 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:48:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:48:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:48:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-ERROR - 2026-04-29 13:48:09 --> Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 300.
- 1 SYSTEMPATH/Database/MySQLi/Connection.php(300): mysqli->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC', 0)
- 2 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 4 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 5 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 6 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 7 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 8 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(2)
- 9 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('daryo')
-10 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('daryo')
-11 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-12 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-13 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-14 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-15 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:09 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'cafemenu.cafe_languages' doesn't exist
-[Method: GET, Route: daryo/menu.json]
-in SYSTEMPATH/Database/BaseConnection.php on line 865.
- 1 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 2 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 3 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 4 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 5 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(2)
- 6 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('daryo')
- 7 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('daryo')
- 8 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
- 9 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-10 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-11 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-12 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:09 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 310.
- 1 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 2 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 4 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 5 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 6 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 7 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(2)
- 8 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('daryo')
- 9 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('daryo')
-10 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-11 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-12 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-13 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-14 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:09 --> [Caused by] mysqli_sql_exception: Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 300.
- 1 SYSTEMPATH/Database/MySQLi/Connection.php(300): mysqli->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC', 0)
- 2 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 2
-ORDER BY `sort_order` ASC, `id` ASC')
- 4 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 5 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 6 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 7 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 8 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(2)
- 9 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('daryo')
-10 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('daryo')
-11 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-12 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-13 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-14 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-15 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-DEBUG - 2026-04-29 13:48:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:48:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-DEBUG - 2026-04-29 13:48:14 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
-ERROR - 2026-04-29 13:48:14 --> Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 300.
- 1 SYSTEMPATH/Database/MySQLi/Connection.php(300): mysqli->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC', 0)
- 2 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 4 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 5 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 6 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 7 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 8 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(1)
- 9 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('bestcafe')
-10 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('bestcafe')
-11 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-12 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-13 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-14 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-15 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:14 --> CodeIgniter\Database\Exceptions\DatabaseException: Table 'cafemenu.cafe_languages' doesn't exist
-[Method: GET, Route: bestcafe/menu.json]
-in SYSTEMPATH/Database/BaseConnection.php on line 865.
- 1 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 2 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 3 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 4 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 5 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(1)
- 6 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('bestcafe')
- 7 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('bestcafe')
- 8 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
- 9 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-10 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-11 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-12 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:14 --> [Caused by] CodeIgniter\Database\Exceptions\DatabaseException: Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 310.
- 1 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 2 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 4 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 5 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 6 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 7 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(1)
- 8 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('bestcafe')
- 9 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('bestcafe')
-10 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-11 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-12 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-13 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-14 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-CRITICAL - 2026-04-29 13:48:14 --> [Caused by] mysqli_sql_exception: Table 'cafemenu.cafe_languages' doesn't exist
-in SYSTEMPATH/Database/MySQLi/Connection.php on line 300.
- 1 SYSTEMPATH/Database/MySQLi/Connection.php(300): mysqli->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC', 0)
- 2 SYSTEMPATH/Database/BaseConnection.php(910): CodeIgniter\Database\MySQLi\Connection->execute('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 3 SYSTEMPATH/Database/BaseConnection.php(827): CodeIgniter\Database\BaseConnection->simpleQuery('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = 1
-ORDER BY `sort_order` ASC, `id` ASC')
- 4 SYSTEMPATH/Database/BaseBuilder.php(1649): CodeIgniter\Database\BaseConnection->query('SELECT *
-FROM `cafe_languages`
-WHERE `cafe_id` = :cafe_id:
-ORDER BY `sort_order` ASC, `id` ASC', [...], false)
- 5 SYSTEMPATH/Model.php(253): CodeIgniter\Database\BaseBuilder->get()
- 6 SYSTEMPATH/BaseModel.php(676): CodeIgniter\Model->doFindAll(0, 0)
- 7 APPPATH/Models/CafeLanguageModel.php(36): CodeIgniter\BaseModel->findAll()
- 8 APPPATH/Services/MenuBuilderService.php(37): App\Models\CafeLanguageModel->getByCafe(1)
- 9 APPPATH/Controllers/MenuJsonController.php(17): App\Services\MenuBuilderService->buildByUsername('bestcafe')
-10 SYSTEMPATH/CodeIgniter.php(951): App\Controllers\MenuJsonController->index('bestcafe')
-11 SYSTEMPATH/CodeIgniter.php(497): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\MenuJsonController))
-12 SYSTEMPATH/CodeIgniter.php(340): CodeIgniter\CodeIgniter->handleRequest(null, Object(Config\Cache), false)
-13 SYSTEMPATH/Boot.php(417): CodeIgniter\CodeIgniter->run()
-14 SYSTEMPATH/Boot.php(68): CodeIgniter\Boot::runCodeIgniter(Object(CodeIgniter\CodeIgniter))
-15 FCPATH/index.php(59): CodeIgniter\Boot::bootWeb(Object(Config\Paths))
-DEBUG - 2026-04-29 13:51:13 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 13:52:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:45:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:46:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:46:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:48:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:49:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:49:42 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:58:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:58:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:39 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 14:59:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:32 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:35 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:40 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:41 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:00:59 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:01:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:02:00 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:02:01 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:02:02 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:04:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:04:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:04:22 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:04:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:05:52 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:05:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:05:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:05:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:05:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:54 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:56 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:57 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:11:58 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:31 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:46 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:12:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:23 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:24 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:27 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:33 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:34 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:14:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:05 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:06 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:08 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:09 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:19 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:29 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:36 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:37 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:43 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:45 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:47 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:48 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:49 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:51 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
+DEBUG - 2026-04-29 15:15:53 --> Session: Class initialized using 'CodeIgniter\Session\Handlers\FileHandler' driver.
