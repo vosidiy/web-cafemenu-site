@@ -50,7 +50,7 @@ class CategoryController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->categoryService->getErrors());
         }
 
-        $this->cafeService->bumpMenuVersion($cafeId);
+        $this->cafeService->touchMenuUpdatedAt($cafeId);
 
         return redirect()->to(site_url('admin/categories'))->with('success', 'Категория создана.');
     }
@@ -77,7 +77,7 @@ class CategoryController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->categoryService->getErrors());
         }
 
-        $this->cafeService->bumpMenuVersion((int) $category['cafe_id']);
+        $this->cafeService->touchMenuUpdatedAt((int) $category['cafe_id']);
 
         return redirect()->to(site_url('admin/categories'))->with('success', 'Категория обновлена.');
     }
@@ -86,7 +86,7 @@ class CategoryController extends BaseController
     {
         $category = $this->findOwnedCategoryOrFail($id);
         $this->categories->delete($id);
-        $this->cafeService->bumpMenuVersion((int) $category['cafe_id']);
+        $this->cafeService->touchMenuUpdatedAt((int) $category['cafe_id']);
 
         return redirect()->to(site_url('admin/categories'))->with('success', 'Категория удалена.');
     }

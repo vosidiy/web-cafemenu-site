@@ -10,8 +10,13 @@ class MenuJsonThrottleFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        $username = (string) $request->getUri()->getSegment(1);
-        $rawKey = sprintf('menu-json-%s-%s', strtolower($username), $request->getIPAddress());
+        $identifier = (string) $request->getUri()->getSegment(1);
+
+        if (strtolower($identifier) === 'code') {
+            $identifier = (string) $request->getUri()->getSegment(2);
+        }
+
+        $rawKey = sprintf('menu-json-%s-%s', strtolower($identifier), $request->getIPAddress());
         $key = preg_replace('/[^a-z0-9_-]/i', '-', $rawKey) ?? 'menu-json';
 
         if (service('throttler')->check($key, 120, MINUTE)) {

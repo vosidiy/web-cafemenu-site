@@ -14,7 +14,7 @@ class AdminAuthFilter implements FilterInterface
             return null;
         }
 
-        return redirect()->to(site_url('admin/login'))->with('error', 'Please log in to continue.');
+        return redirect()->to(site_url('login'));
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)

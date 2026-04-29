@@ -12,6 +12,7 @@ class CafeModel extends Model
     protected $useAutoIncrement = true;
     protected $protectFields    = true;
     protected $allowedFields    = [
+        'code',
         'username',
         'phone',
         'person_name',
@@ -24,7 +25,6 @@ class CafeModel extends Model
         'theme_style',
         'address_text',
         'location_url',
-        'menu_version',
         'menu_updated_at',
         'status',
     ];
@@ -33,6 +33,7 @@ class CafeModel extends Model
     protected bool $updateOnlyChanged = true;
 
     protected $validationRules = [
+        'code'          => 'permit_empty|exact_length[6]|numeric',
         'username'      => 'required|min_length[3]|max_length[50]|regex_match[/^[a-z0-9_-]+$/]|is_unique[cafes.username,id,{id}]',
         'phone'         => 'required|min_length[5]|max_length[30]',
         'person_name'   => 'required|min_length[2]|max_length[150]',
@@ -50,6 +51,13 @@ class CafeModel extends Model
     public function findActiveByUsername(string $username): ?array
     {
         return $this->where('username', $username)
+            ->where('status', 'active')
+            ->first();
+    }
+
+    public function findActiveByCode(string $code): ?array
+    {
+        return $this->where('code', $code)
             ->where('status', 'active')
             ->first();
     }

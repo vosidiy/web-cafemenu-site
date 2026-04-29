@@ -88,7 +88,7 @@ class MenuItemController extends BaseController
         }
 
         $this->items->delete($id);
-        $this->cafeService->bumpMenuVersion($cafeId);
+        $this->cafeService->touchMenuUpdatedAt($cafeId);
 
         return redirect()->to(site_url('admin'))->with('success', 'Блюдо удалено.');
     }
@@ -145,7 +145,7 @@ class MenuItemController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->itemService->getErrors());
         }
 
-        $this->cafeService->bumpMenuVersion($cafeId);
+        $this->cafeService->touchMenuUpdatedAt($cafeId);
 
         return redirect()->to(site_url('admin'))
             ->with('success', $id === null ? 'Блюдо создано.' : 'Блюдо обновлено.');

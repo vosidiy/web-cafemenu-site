@@ -3,6 +3,7 @@
 
 CREATE TABLE `cafes` (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `code` char(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
   `person_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -15,12 +16,12 @@ CREATE TABLE `cafes` (
   `theme_style` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme1',
   `address_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `location_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `menu_version` int NOT NULL DEFAULT 1,
   `menu_updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` enum('active','inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `code` (`code`),
   UNIQUE KEY `username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 

@@ -54,11 +54,11 @@
                 </div>
             <?php endif; ?>
             
-            <form method="post" action="<?= site_url('admin/register') ?>">
+            <form method="post" action="<?= site_url('register') ?>">
                 <?= csrf_field() ?>
                 <div class="mb-4">
                     <label class="form-label mb-0">Username</label>
-                    <div class="text-sm text-secondary mb-2">Только строчные буквы, цифры, подчёркивание и дефис.</div>
+                    <div class="text-sm text-secondary mb-2">Можно вводить с заглавными буквами и пробелами. Мы автоматически сохраним username в нижнем регистре без пробелов.</div>
                     <input type="text" name="username" placeholder="bestcafe" class="form-control" value="<?= esc(menu_old('username')) ?>" placeholder="bestcafe" required>
                 </div>
                 <div class="mb-4">
@@ -89,7 +89,7 @@
     </article>
 
     <p class="text-center my-5">
-        <a href="<?= site_url('admin/login') ?>">Уже есть аккаунт? Login </a>
+        <a href="<?= site_url('login') ?>">Уже есть аккаунт? Login </a>
     </p>
 
 </div>
@@ -97,4 +97,3 @@
 
 </body>
 </html>
-

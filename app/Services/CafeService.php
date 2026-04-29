@@ -35,7 +35,12 @@ class CafeService
         return $this->cafes->findActiveByUsername($username);
     }
 
-    public function bumpMenuVersion(int $cafeId): void
+    public function getActiveCafeByCode(string $code): ?array
+    {
+        return $this->cafes->findActiveByCode($code);
+    }
+
+    public function touchMenuUpdatedAt(int $cafeId): void
     {
         $cafe = $this->cafes->find($cafeId);
 
@@ -44,7 +49,6 @@ class CafeService
         }
 
         $this->cafes->skipValidation(true)->update($cafeId, [
-            'menu_version'    => ((int) ($cafe['menu_version'] ?? 1)) + 1,
             'menu_updated_at' => (new DateTimeImmutable('now'))->format('Y-m-d H:i:s'),
         ]);
     }

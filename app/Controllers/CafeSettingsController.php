@@ -34,7 +34,7 @@ class CafeSettingsController extends BaseController
         $cafe = $this->cafeService->getCurrentCafe();
 
         if ($cafe === null) {
-            return redirect()->to(site_url('admin/login'));
+            return redirect()->to(site_url('login'));
         }
 
         $data = [
@@ -82,7 +82,7 @@ class CafeSettingsController extends BaseController
 
         $db->transCommit();
 
-        $this->cafeService->bumpMenuVersion((int) $cafe['id']);
+        $this->cafeService->touchMenuUpdatedAt((int) $cafe['id']);
 
         return redirect()->to(site_url('admin/settings'))->with('success', 'Настройки кафе обновлены.');
     }
@@ -92,7 +92,7 @@ class CafeSettingsController extends BaseController
         $cafe = $this->cafeService->getCurrentCafe();
 
         if ($cafe === null) {
-            return redirect()->to(site_url('admin/login'));
+            return redirect()->to(site_url('login'));
         }
 
         $rules = [

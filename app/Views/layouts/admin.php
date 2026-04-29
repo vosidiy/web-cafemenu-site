@@ -47,7 +47,7 @@
             <?php if (session('username')): ?>
             <a href="<?= site_url(session('username')) ?>" target="_blank" class="btn btn-default"> Открыть меню ↗ </a>
             <?php endif; ?>
-            <a href="<?= site_url('admin/logout') ?>" class="btn btn-default"> Выйти </a>
+            <a href="<?= site_url('logout') ?>" class="btn btn-default"> Выйти </a>
         </div>
 
     </div>  <!-- container .// -->

@@ -11,13 +11,13 @@ $routes->get('sitemap.xml', 'SitemapController::index');
 
 $routes->view('thankyou', 'thankyou'); // uri and pagename
 
-$routes->group('admin', static function ($routes) {
-    $routes->get('register', 'AuthController::register');
-    $routes->post('register', 'AuthController::store');
-    $routes->get('login', 'AuthController::login');
-    $routes->post('login', 'AuthController::authenticate');
-    $routes->get('logout', 'AuthController::logout');
+$routes->get('register', 'AuthController::register');
+$routes->post('register', 'AuthController::store');
+$routes->get('login', 'AuthController::login');
+$routes->post('login', 'AuthController::authenticate');
+$routes->get('logout', 'AuthController::logout');
 
+$routes->group('admin', static function ($routes) {
     $routes->get('/', 'AdminController::index', ['filter' => 'adminauth']);
     $routes->get('settings', 'CafeSettingsController::edit', ['filter' => 'adminauth']);
     $routes->post('settings', 'CafeSettingsController::update', ['filter' => 'adminauth']);
@@ -38,6 +38,7 @@ $routes->group('admin', static function ($routes) {
     $routes->post('menu-items/(:num)/delete', 'MenuItemController::delete/$1', ['filter' => 'adminauth']);
 });
 
+$routes->get('code/(:num)', 'MenuJsonController::byCode/$1', ['filter' => 'menuthrottle']);
 $routes->get('(:segment)/manifest.webmanifest', 'PwaController::manifest/$1');
 $routes->get('(:segment)/sw.js', 'PwaController::serviceWorker/$1');
 $routes->get('(:segment)/menu.json', 'MenuJsonController::index/$1', ['filter' => 'menuthrottle']);

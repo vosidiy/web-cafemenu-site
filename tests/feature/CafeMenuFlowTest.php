@@ -2,6 +2,7 @@
 
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\FeatureTestTrait;
+use Config\Services;
 use Config\Database;
 
 /**
@@ -37,12 +38,12 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result = $this->get('admin');
 
         $result->assertRedirect();
-        $result->assertRedirectTo('admin/login');
+        $result->assertRedirectTo('login');
     }
 
     public function testRegistrationCreatesCafeAndDefaultLanguageAndRedirectsToDashboard(): void
     {
-        $result = $this->post('admin/register', [
+        $result = $this->post('register', [
             'username'         => 'bestcafe',
             'phone'            => '+998901234567',
             'person_name'      => 'Ali',
@@ -57,6 +58,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $row = Database::connect('tests')->table('cafes')->where('username', 'bestcafe')->get()->getRowArray();
 
         $this->assertNotNull($row);
+        $this->assertMatchesRegularExpression('/^\d{6}$/', (string) ($row['code'] ?? ''));
         $this->assertTrue(password_verify('secret123', $row['password_hash']));
 
         $languageRow = Database::connect('tests')->table('cafe_languages')->where('cafe_id', $row['id'])->get()->getRowArray();
@@ -66,12 +68,78 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame(1, (int) $languageRow['sort_order']);
     }
 
+    public function testRegistrationNormalizesUppercaseAndSpacesInUsername(): void
+    {
+        $result = $this->post('register', [
+            'username'         => ' Best Cafe ',
+            'phone'            => '+998901234567',
+            'person_name'      => 'Ali',
+            'cafe_name'        => 'Best Cafe',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ]);
+
+        $result->assertRedirectTo('admin');
+
+        $row = Database::connect('tests')->table('cafes')->where('username', 'bestcafe')->get()->getRowArray();
+
+        $this->assertNotNull($row);
+    }
+
+    public function testRegistrationCanSucceedWithoutCodeWhenGenerationCollidesRepeatedly(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '123456',
+            'username'      => 'existingcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Existing Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $controller = new class extends \App\Controllers\AuthController {
+            protected function generateCafeCode(): string
+            {
+                return '123456';
+            }
+        };
+
+        $controller->initController(
+            Services::request(),
+            Services::response(),
+            Services::logger(),
+        );
+
+        $_POST = [
+            'username'         => 'bestcafe',
+            'phone'            => '+998998887766',
+            'person_name'      => 'Vali',
+            'cafe_name'        => 'Other Cafe',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ];
+
+        $response = $controller->store();
+
+        $this->assertTrue($response->isRedirect());
+
+        $row = $db->table('cafes')->where('username', 'bestcafe')->get()->getRowArray();
+
+        $this->assertNotNull($row);
+        $this->assertNull($row['code']);
+    }
+
     public function testMenuJsonReturnsMultilingualPayloadAndPublicFilters(): void
     {
         $db = Database::connect('tests');
 
         $db->table('cafes')->insert([
             'id'              => 1,
+            'code'            => '123456',
             'username'        => 'bestcafe',
             'phone'           => '+998901234567',
             'person_name'     => 'Ali',
@@ -82,7 +150,6 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             'theme_style'     => 'theme2',
             'address_text'    => 'Navoi street 12',
             'location_url'    => 'https://maps.google.com/?q=41.55,60.63',
-            'menu_version'    => 5,
             'menu_updated_at' => '2026-04-02 14:30:00',
             'status'          => 'active',
             'created_at'      => '2026-04-02 14:30:00',
@@ -235,7 +302,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
 
         $this->assertSame('bestcafe', $payload['meta']['username']);
-        $this->assertSame(5, $payload['meta']['version']);
+        $this->assertArrayNotHasKey('version', $payload['meta']);
         $this->assertSame('ru', $payload['meta']['default_language']);
         $this->assertCount(2, $payload['meta']['languages']);
         $this->assertSame('Fresh coffee every day', $payload['cafe']['slogan']);
@@ -251,12 +318,143 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('http://example.com/uploads/bestcafe/cappuccino.jpg', $payload['items'][0]['image_url']);
     }
 
+    public function testRegistrationWithDuplicateUsernameFailsWithoutCreatingSecondCafe(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '123456',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->post('register', [
+            'username'         => 'bestcafe',
+            'phone'            => '+998998887766',
+            'person_name'      => 'Vali',
+            'cafe_name'        => 'Other Cafe',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ]);
+
+        $result->assertRedirect();
+
+        $cafes = $db->table('cafes')->where('username', 'bestcafe')->get()->getResultArray();
+
+        $this->assertCount(1, $cafes);
+    }
+
+    public function testRegistrationTreatsFormattedUsernameVariantsAsDuplicates(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '123456',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->post('register', [
+            'username'         => ' BEST CAFE ',
+            'phone'            => '+998998887766',
+            'person_name'      => 'Vali',
+            'cafe_name'        => 'Other Cafe',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ]);
+
+        $result->assertRedirect();
+
+        $cafes = $db->table('cafes')->where('username', 'bestcafe')->get()->getResultArray();
+
+        $this->assertCount(1, $cafes);
+    }
+
+    public function testLoginAcceptsUppercaseAndSpacesInUsername(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '123456',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->post('login', [
+            'username' => ' Best Cafe ',
+            'password' => 'secret123',
+        ]);
+
+        $result->assertRedirectTo('admin');
+    }
+
+    public function testMenuJsonCanBeFetchedByPairingCode(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'bestcafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Best Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'currency_name'   => 'UZS',
+            'theme_style'     => 'theme2',
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'active',
+            'created_at'      => '2026-04-02 14:30:00',
+            'updated_at'      => '2026-04-02 14:30:00',
+        ]);
+
+        $db->table('cafe_languages')->insert([
+            'id'            => 1,
+            'cafe_id'       => 1,
+            'language_code' => 'ru',
+            'sort_order'    => 1,
+            'created_at'    => '2026-04-02 14:30:00',
+            'updated_at'    => '2026-04-02 14:30:00',
+        ]);
+
+        $result = $this->get('code/123456');
+
+        $result->assertStatus(200);
+        $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('bestcafe', $payload['meta']['username']);
+        $this->assertSame('Best Cafe', $payload['cafe']['name']);
+    }
+
+    public function testMenuJsonByInvalidPairingCodeReturnsNotFound(): void
+    {
+        $result = $this->get('code/999999');
+
+        $result->assertStatus(404);
+    }
+
     public function testCategoryCreatePersistsTranslationsForEnabledCafeLanguages(): void
     {
         $db = Database::connect('tests');
 
         $db->table('cafes')->insert([
             'id'            => 1,
+            'code'          => '234567',
             'username'      => 'bestcafe',
             'phone'         => '+998901234567',
             'person_name'   => 'Ali',
@@ -301,6 +499,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $db->table('cafes')->insert([
             'id'            => 1,
+            'code'          => '345678',
             'username'      => 'bestcafe',
             'phone'         => '+998901234567',
             'person_name'   => 'Ali',
@@ -340,6 +539,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $db->table('cafes')->insert([
             'id'            => 1,
+            'code'          => '456789',
             'username'      => 'bestcafe',
             'phone'         => '+998901234567',
             'person_name'   => 'Ali',
@@ -383,6 +583,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $db->query('
             CREATE TABLE IF NOT EXISTS cafes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                code VARCHAR(6) DEFAULT NULL UNIQUE,
                 username VARCHAR(50) NOT NULL UNIQUE,
                 phone VARCHAR(30) NOT NULL,
                 person_name VARCHAR(150) NOT NULL,
@@ -395,7 +596,6 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 theme_style VARCHAR(20) NOT NULL DEFAULT "theme1",
                 address_text VARCHAR(255) DEFAULT NULL,
                 location_url VARCHAR(500) DEFAULT NULL,
-                menu_version INTEGER NOT NULL DEFAULT 1,
                 menu_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 status VARCHAR(20) NOT NULL DEFAULT "active",
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

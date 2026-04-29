@@ -3,7 +3,12 @@
 <?= $this->section('content') ?>
 <div class="d-flex justify-content-between align-items-center mb-2 pb-3 border-bottom border-color-neutral-300">
     <div>
-        <h2 class="text-3xl mb-1">Главная: <?= esc($cafe['cafe_name'] ?: $cafe['username']) ?></h2>
+        <h2 class="text-3xl mb-1">
+            Главная: <?= esc($cafe['cafe_name'] ?: $cafe['username']) ?>
+            <span class="text-lg fw-normal text-secondary">
+                • Pairing code: <?= esc($cafe['code'] ?? '-') ?> for tablet or phone apps
+            </span>
+        </h2>
         <p class="mb-0">
          Username: <strong><?= esc($cafe['username']) ?></strong> •   JSON url <a href="<?= esc($publicJsonUrl) ?>" target="_blank"><?= esc($publicJsonUrl) ?></a> 
         </p>
@@ -16,10 +21,6 @@
     </div>
     <div>
         <p>Категории: <span class="fw-semibold"><?= esc($categoryCount) ?></span></p>
-    </div>
-    <div>
-        <p>Версия меню: <span class="fw-semibold"><?= esc($cafe['menu_version'] ?? 1) ?></span></p>
-        
     </div>
     <div>
         <p>Обновлено: <span class="fw-semibold"><?= esc($cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? '-') ?></span></p>

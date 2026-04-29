@@ -31,7 +31,23 @@ class MenuBuilderService
             return null;
         }
 
-        $menuVersion = array_key_exists('menu_version', $cafe) ? (int) $cafe['menu_version'] : 1;
+        return $this->buildFromCafe($cafe);
+    }
+
+    public function buildByCode(string $code): ?array
+    {
+        $cafe = $this->cafes->findActiveByCode($code);
+
+        if ($cafe === null) {
+            return null;
+        }
+
+        return $this->buildFromCafe($cafe);
+    }
+
+    private function buildFromCafe(array $cafe): array
+    {
+
         $menuUpdatedAt = $cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? date('Y-m-d H:i:s');
 
         $languages = $this->cafeLanguages->getByCafe((int) $cafe['id']);
@@ -57,7 +73,6 @@ class MenuBuilderService
         return [
             'meta'       => [
                 'username'   => $cafe['username'],
-                'version'    => $menuVersion,
                 'updated_at' => Time::parse($menuUpdatedAt, app_timezone())->toDateTime()->format(DATE_ATOM),
                 'default_language' => $defaultLanguage,
                 'languages'  => array_values(array_filter(array_map(

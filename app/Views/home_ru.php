@@ -104,7 +104,7 @@ $faqSchema = [
                 <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-icon btn-default" aria-label="Связаться с CafeMenu в Telegram">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-icon lucide-phone"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
                 </a>
-                <a href="<?= site_url('admin/login') ?>" class="btn btn-orange">Войти</a>
+                <a href="<?= site_url('login') ?>" class="btn btn-orange">Войти</a>
                 <button class="btn btn-neutral ml-1 btn-icon" onclick="toggleMenu()" aria-label="Открыть меню навигации">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>
                 </button>
@@ -124,7 +124,7 @@ $faqSchema = [
 
         <div class="d-none md:d-block">
             <a href="#contact" class="btn btn-default">Связаться</a>
-            <a href="<?= site_url('admin/login') ?>" class="btn btn-orange">Вход в админ</a>
+            <a href="<?= site_url('login') ?>" class="btn btn-orange">Вход в админ</a>
         </div>
     </div>
 </header>

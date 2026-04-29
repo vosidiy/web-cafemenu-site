@@ -43,7 +43,7 @@
                     <div class="alert p-2 alert-danger"> ⚠️ <?= esc(session()->getFlashdata('error')) ?></div>
                 <?php endif; ?>
                         
-                <form method="post" action="<?= site_url('admin/login') ?>">
+                <form method="post" action="<?= site_url('login') ?>">
                     <?= csrf_field() ?>
                     <div class="mb-4">
                         <label class="form-label">Имя пользователя</label>
@@ -62,7 +62,7 @@
 
         <br>
 
-        <p hidden class="text-center my-5"> <a  href="<?= site_url('admin/register') ?>">Создать аккаунт</a></p>
+        <p hidden class="text-center my-5"> <a  href="<?= site_url('register') ?>">Создать аккаунт</a></p>
 </div>
 
 

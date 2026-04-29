@@ -30,8 +30,10 @@ class AuthController extends BaseController
 
     public function store()
     {
+        $normalizedUsername = $this->normalizeUsername((string) $this->request->getPost('username'));
+
         $data = [
-            'username'       => strtolower(trim((string) $this->request->getPost('username'))),
+            'username'       => $normalizedUsername,
             'phone'          => trim((string) $this->request->getPost('phone')),
             'person_name'    => trim((string) $this->request->getPost('person_name')),
             'cafe_name'      => trim((string) $this->request->getPost('cafe_name')),
@@ -53,7 +55,10 @@ class AuthController extends BaseController
             'password_confirm' => 'required|matches[password]',
         ];
 
-        if (! $this->validateData($this->request->getPost(), $rules)) {
+        $validationData = $this->request->getPost();
+        $validationData['username'] = $normalizedUsername;
+
+        if (! $this->validateData($validationData, $rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
         }
 
@@ -64,9 +69,34 @@ class AuthController extends BaseController
         $db = Database::connect();
         $db->transBegin();
 
-        if ($this->cafes->insert($data) === false) {
-            $db->transRollback();
-            return redirect()->back()->withInput()->with('errors', $this->cafes->errors());
+        $insertError = null;
+
+        for ($attempt = 0; $attempt < 5; $attempt++) {
+            $data['code'] = $this->generateCafeCode();
+
+            if ($this->cafes->insert($data) !== false) {
+                $insertError = null;
+                break;
+            }
+
+            $insertError = $db->error();
+
+            if (! $this->isDuplicateCodeInsertError($db->error())) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('errors', $this->cafes->errors());
+            }
+
+            $this->cafes->resetValidation();
+        }
+
+        if ($insertError !== null && $this->isDuplicateCodeInsertError($insertError)) {
+            $this->cafes->resetValidation();
+            $data['code'] = null;
+
+            if ($this->cafes->insert($data) === false) {
+                $db->transRollback();
+                return redirect()->back()->withInput()->with('errors', $this->cafes->errors());
+            }
         }
 
         $cafeId = (int) $this->cafes->getInsertID();
@@ -101,7 +131,7 @@ class AuthController extends BaseController
 
     public function authenticate()
     {
-        $username = strtolower(trim((string) $this->request->getPost('username')));
+        $username = $this->normalizeUsername((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
 
         $cafe = $this->cafes->where('username', $username)->first();
@@ -123,6 +153,35 @@ class AuthController extends BaseController
     {
         $this->session->destroy();
 
-        return redirect()->to(site_url('admin/login'))->with('success', 'Вы успешно вышли из системы.');
+        return redirect()->to(site_url('login'))->with('success', 'Вы успешно вышли из системы.');
+    }
+
+    protected function generateCafeCode(): string
+    {
+        return str_pad((string) random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+
+    private function normalizeUsername(string $username): string
+    {
+        $username = trim($username);
+        $username = preg_replace('/\s+/u', '', $username) ?? '';
+
+        return strtolower($username);
+    }
+
+    private function isDuplicateCodeInsertError(array $dbError): bool
+    {
+        $code = (int) ($dbError['code'] ?? 0);
+        $message = strtolower((string) ($dbError['message'] ?? ''));
+
+        if ($code === 1062 && str_contains($message, 'code')) {
+            return true;
+        }
+
+        if ($code === 19 && str_contains($message, 'cafes.code')) {
+            return true;
+        }
+
+        return false;
     }
 }
