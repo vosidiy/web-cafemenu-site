@@ -35,6 +35,8 @@
                     >
                 </div>
             <?php endforeach; ?>
+            <p class="my-3"><a href="<?= site_url('admin/settings') ?>#languages">⚙️ Настройка языки</a></p>
+            
             <hr>
             <div class="row">
                 <div class="md:col-3 mb-4">

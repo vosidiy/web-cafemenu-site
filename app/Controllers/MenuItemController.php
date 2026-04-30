@@ -28,10 +28,67 @@ class MenuItemController extends BaseController
     public function index(): string
     {
         $cafeId = (int) $this->cafeService->getCurrentCafeId();
+        $items = $this->items->getByCafe($cafeId);
+        $languages = $this->cafeLanguages->getByCafe($cafeId);
+        $languageCodes = array_values(array_filter(array_map(
+            static fn (array $language): string => (string) ($language['language_code'] ?? $language['code'] ?? ''),
+            $languages,
+        )));
+        $translationRows = $this->itemTranslations->getByMenuItemIds(
+            array_map(static fn (array $item): int => (int) $item['id'], $items),
+            $languageCodes,
+        );
+        $translationsByItem = [];
+
+        foreach ($translationRows as $translationRow) {
+            $translationsByItem[(int) $translationRow['menu_item_id']][(string) $translationRow['language_code']] = $translationRow;
+        }
+
+        foreach ($items as &$item) {
+            $orderedTranslations = [];
+            $searchTerms = [];
+            $itemTranslations = $translationsByItem[(int) $item['id']] ?? [];
+
+            foreach ($languages as $language) {
+                $languageCode = (string) ($language['language_code'] ?? $language['code'] ?? '');
+                $translation = $itemTranslations[$languageCode] ?? null;
+
+                if ($translation === null) {
+                    continue;
+                }
+
+                $name = trim((string) ($translation['name'] ?? ''));
+                $description = trim((string) ($translation['description'] ?? ''));
+
+                if ($name === '' && $description === '') {
+                    continue;
+                }
+
+                $orderedTranslations[] = [
+                    'code'        => $languageCode,
+                    'flag'        => (string) ($language['flag'] ?? '🏳️'),
+                    'label'       => (string) ($language['label'] ?? strtoupper($languageCode)),
+                    'name'        => $name,
+                    'description' => $description,
+                ];
+
+                if ($name !== '') {
+                    $searchTerms[] = $name;
+                }
+
+                if ($description !== '') {
+                    $searchTerms[] = $description;
+                }
+            }
+
+            $item['translations'] = $orderedTranslations;
+            $item['search_name'] = implode(' ', $searchTerms);
+        }
+        unset($item);
 
         return view('admin/menu_items/index', [
             'title' => 'Блюда меню',
-            'items' => $this->items->getByCafe($cafeId),
+            'items' => $items,
         ]);
     }
 

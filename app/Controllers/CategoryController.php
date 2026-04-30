@@ -26,11 +26,56 @@ class CategoryController extends BaseController
     public function index(): string
     {
         $cafe = $this->cafeService->getCurrentCafe();
+        $categories = $this->categories->getByCafe((int) $cafe['id']);
+        $languages = $this->cafeLanguages->getByCafe((int) $cafe['id']);
+        $languageCodes = array_values(array_filter(array_map(
+            static fn (array $language): string => (string) ($language['language_code'] ?? $language['code'] ?? ''),
+            $languages,
+        )));
+        $translationRows = $this->categoryTranslations->getByCategoryIds(
+            array_map(static fn (array $category): int => (int) $category['id'], $categories),
+            $languageCodes,
+        );
+        $translationsByCategory = [];
+
+        foreach ($translationRows as $translationRow) {
+            $translationsByCategory[(int) $translationRow['category_id']][(string) $translationRow['language_code']] = $translationRow;
+        }
+
+        foreach ($categories as &$category) {
+            $orderedTranslations = [];
+            $categoryTranslations = $translationsByCategory[(int) $category['id']] ?? [];
+
+            foreach ($languages as $language) {
+                $languageCode = (string) ($language['language_code'] ?? $language['code'] ?? '');
+                $translation = $categoryTranslations[$languageCode] ?? null;
+
+                if ($translation === null) {
+                    continue;
+                }
+
+                $name = trim((string) ($translation['name'] ?? ''));
+
+                if ($name === '') {
+                    continue;
+                }
+
+                $orderedTranslations[] = [
+                    'code'  => $languageCode,
+                    'flag'  => (string) ($language['flag'] ?? '🏳️'),
+                    'label' => (string) ($language['label'] ?? strtoupper($languageCode)),
+                    'name'  => $name,
+                ];
+            }
+
+            $category['translations'] = $orderedTranslations;
+        }
+        unset($category);
 
         return view('admin/categories/index', [
             'title'      => 'Категории',
             'cafe'       => $cafe,
-            'categories' => $this->categories->getByCafe((int) $cafe['id']),
+            'categories' => $categories,
         ]);
     }
 

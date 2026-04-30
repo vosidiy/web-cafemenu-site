@@ -688,6 +688,57 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertNull($category['icon_path']);
     }
 
+    public function testAdminCategoriesIndexShowsEnabledTranslationsOnly(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '345679',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insertBatch([
+            ['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1],
+            ['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 2],
+        ]);
+
+        $db->table('categories')->insert([
+            'id'         => 1,
+            'cafe_id'    => 1,
+            'sort_order' => 1,
+            'is_active'  => 1,
+        ]);
+
+        $db->table('category_translations')->insertBatch([
+            ['category_id' => 1, 'language_code' => 'en', 'name' => 'Drinks'],
+            ['category_id' => 1, 'language_code' => 'ru', 'name' => 'напитки'],
+            ['category_id' => 1, 'language_code' => 'de', 'name' => 'Getranke'],
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->get('admin/categories');
+
+        $result->assertStatus(200);
+
+        $body = (string) $result->getBody();
+
+        $this->assertStringContainsString('🇺🇸 Drinks', $body);
+        $this->assertStringContainsString('🇷🇺 напитки', $body);
+        $this->assertStringNotContainsString('Getranke', $body);
+        $this->assertLessThan(
+            strpos($body, '🇷🇺 напитки'),
+            strpos($body, '🇺🇸 Drinks'),
+        );
+    }
+
     public function testCafeSettingsRejectDuplicateLanguages(): void
     {
         $db = Database::connect('tests');
@@ -889,6 +940,75 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $result->assertRedirect();
         $this->assertNull($db->table('menu_items')->where('cafe_id', 1)->get()->getRowArray());
+    }
+
+    public function testAdminMenuItemsIndexShowsEnabledTranslationsAndSearchesAcrossThem(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '567890',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insertBatch([
+            ['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1],
+            ['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 2],
+        ]);
+
+        $db->table('categories')->insert([
+            'id'         => 1,
+            'cafe_id'    => 1,
+            'sort_order' => 1,
+            'is_active'  => 1,
+        ]);
+
+        $db->table('category_translations')->insertBatch([
+            ['category_id' => 1, 'language_code' => 'en', 'name' => 'Drinks'],
+            ['category_id' => 1, 'language_code' => 'ru', 'name' => 'Напитки'],
+        ]);
+
+        $db->table('menu_items')->insert([
+            'id'           => 1,
+            'cafe_id'      => 1,
+            'category_id'  => 1,
+            'price'        => 18000,
+            'image_path'   => null,
+            'is_available' => 1,
+            'sort_order'   => 1,
+        ]);
+
+        $db->table('menu_item_translations')->insertBatch([
+            ['menu_item_id' => 1, 'language_code' => 'en', 'name' => 'Coca cola drink', 'description' => 'Some text about coca cola'],
+            ['menu_item_id' => 1, 'language_code' => 'ru', 'name' => 'напиток Кока-кола', 'description' => 'Текст о кока-коле'],
+            ['menu_item_id' => 1, 'language_code' => 'de', 'name' => 'Cola Getrank', 'description' => 'Sollte versteckt bleiben'],
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->get('admin/menu-items');
+
+        $result->assertStatus(200);
+
+        $body = (string) $result->getBody();
+
+        $this->assertStringContainsString('🇺🇸 Coca cola drink', $body);
+        $this->assertStringContainsString('Some text about coca cola', $body);
+        $this->assertStringContainsString('🇷🇺 напиток Кока-кола', $body);
+        $this->assertStringContainsString('Текст о кока-коле', $body);
+        $this->assertStringNotContainsString('Cola Getrank', $body);
+        $this->assertStringContainsString('data-name="coca cola drink some text about coca cola напиток кока-кола текст о кока-коле"', mb_strtolower($body, 'UTF-8'));
+        $this->assertLessThan(
+            strpos($body, '🇷🇺 напиток Кока-кола'),
+            strpos($body, '🇺🇸 Coca cola drink'),
+        );
     }
 
     private function postCategoryThroughController(array $post, ?int $categoryId = null, ?string $storedIconPath = null)

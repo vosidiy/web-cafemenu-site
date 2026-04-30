@@ -36,7 +36,11 @@
                                 <span class="text-muted">-</span>
                             <?php endif; ?>
                         </td>
-                        <td><?= esc($category['name']) ?></td>
+                        <td>
+                            <?php foreach (($category['translations'] ?? []) as $index => $translation): ?>
+                                <p class="mb-1"><?= esc(trim($translation['flag'] . ' ' . $translation['name'])) ?></p>
+                            <?php endforeach; ?>
+                        </td>
                         <td><?= esc($category['sort_order']) ?></td>
                         <td>
                             <span class="badge <?= (int) $category['is_active'] === 1 ? 'text-bg-success' : 'text-bg-secondary' ?>">
