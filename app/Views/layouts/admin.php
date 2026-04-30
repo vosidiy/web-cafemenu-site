@@ -36,9 +36,9 @@
         <nav id="menu_header" class="d-none md:d-block">
             <ul class="nav nav-col md:flex-row mt-4 md:mt-0">
                 <li><a class="nav-link" href="<?= site_url('admin') ?>">Главная</a></li>
-                <li><a class="nav-link" href="<?= site_url('admin/settings') ?>">Настройки</a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/categories') ?>">Категории</a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/menu-items') ?>">Поиск блюд</a></li>
+                <li><a class="nav-link" href="<?= site_url('admin/settings') ?>">Настройки</a></li>
             </ul>
         </nav>
         <?php endif; ?>
@@ -56,20 +56,22 @@
 <main class="container">
 
 <?php if (session()->getFlashdata('success')): ?>
-    <div class="alert p-2 alert-success">  ✅  <?= esc(session()->getFlashdata('success')) ?></div>
+    <div class="alert mt-2 mb-0 alert-success">  ✅  <?= esc(session()->getFlashdata('success')) ?></div>
 <?php endif; ?>
 
 <?php if (session()->getFlashdata('error')): ?>
-    <div class="alert p-2 alert-danger"> ⚠️ <?= esc(session()->getFlashdata('error')) ?></div>
+    <div class="alert mt-2 mb-0 alert-danger"> ⚠️ <?= esc(session()->getFlashdata('error')) ?></div>
 <?php endif; ?>
 
 <?php $errors = session()->getFlashdata('errors') ?? []; ?>
 <?php if ($errors !== []): ?>
-    <div class="alert alert-danger">
-        <h6 class="mb-1">Исправьте следующие ошибки:</h6>
-        <?php foreach ($errors as $error): ?>
-        <p class="mb-1">  ⚠️   <?= esc($error) ?></p>
-        <?php endforeach; ?>
+    <div class="alert mt-2 mb-0 alert-danger">
+        <div>
+            <h6 class="mb-1">Исправьте следующие ошибки:</h6>
+            <?php foreach ($errors as $error): ?>
+            <p class="mb-1">  ⚠️   <?= esc($error) ?></p>
+            <?php endforeach; ?>
+        </div>
     </div>
 <?php endif; ?>
 

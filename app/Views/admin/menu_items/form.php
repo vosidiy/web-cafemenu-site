@@ -10,6 +10,7 @@
     </a> <span class="px-2 text-muted"> /</span>
     <h2 class="text-3xl"><?= esc($title) ?></h2>
 </header>
+
 <div class="card">
     <div class="card-body">
         <form method="post" action="<?= esc($action) ?>" enctype="multipart/form-data">

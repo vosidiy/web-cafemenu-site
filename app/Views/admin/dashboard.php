@@ -1,29 +1,29 @@
 <?= $this->extend('layouts/admin') ?>
 
 <?= $this->section('content') ?>
-<div class="d-flex justify-content-between align-items-center mb-2 pb-3 border-bottom border-color-neutral-300">
+
+<header class="md:d-flex align-items-center justify-content-between py-4">
+    <h2 class="text-3xl"> Управление: <?= esc($cafe['cafe_name'] ?: $cafe['username']) ?> </h2>
+    <div class="card p-2 mt-3 md:mt-0">
+        <h5 class="text-lg text-secondary"> 📲 Pairing code: <?= esc($cafe['code'] ?? '-') ?></h5>
+    </div>
+</header>
+
+
+<div class="d-flex md:gap-3 flex-wrap mb-4 border-top border-color-neutral-300 pt-3">
     <div>
-        <h2 class="text-3xl mb-1">
-            Главная: <?= esc($cafe['cafe_name'] ?: $cafe['username']) ?>
-            <span class="text-lg fw-normal text-secondary">
-                • Pairing code: <?= esc($cafe['code'] ?? '-') ?> for tablet or phone apps
-            </span>
-        </h2>
+        <p>Блюда: <span class="fw-semibold"><?= esc($itemCount) ?></span> •  </p>
+    </div>
+    <div>
+        <p>Категории: <span class="fw-semibold"><?= esc($categoryCount) ?></span> •</p>
+    </div>
+    <div>
+        <p>Обновлено: <span class="fw-semibold"><?= esc($cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? '-') ?> • </span></p>
+    </div>
+    <div class="md:ml-auto">
         <p class="mb-0">
          Username: <strong><?= esc($cafe['username']) ?></strong> •   JSON url <a href="<?= esc($publicJsonUrl) ?>" target="_blank"><?= esc($publicJsonUrl) ?></a> 
         </p>
-    </div>
-</div>
-
-<div class="d-flex gap-4 flex-wrap mb-4">
-    <div>
-        <p>Блюда: <span class="fw-semibold"><?= esc($itemCount) ?></span></p>
-    </div>
-    <div>
-        <p>Категории: <span class="fw-semibold"><?= esc($categoryCount) ?></span></p>
-    </div>
-    <div>
-        <p>Обновлено: <span class="fw-semibold"><?= esc($cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? '-') ?></span></p>
     </div>
 </div>
 
@@ -63,7 +63,7 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
 
 <main class="card">
     <header class="p-3 bg-neutral-200 border-bottom">
-        <div class="row justify-content-between">
+        <div class="row gap-rows-4 justify-content-between">
             <div class="lg:col-5">
                 <select class="form-select" data-category-filter aria-label="Фильтр блюд по категории">
                     <option value="all">Все категории</option>
@@ -81,20 +81,20 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
 
     <div class="card-body">
         <?php if ($items === []): ?>
-            <div class="text-center py-5 text-muted">Пункты меню пока не созданы.</div>
+            <div class="text-center py-5 text-lg text-secondary"> <span class="text-5xl">📖</span> <br> Меню пока не созданы.</div>
         <?php else: ?>
             
             <div data-menu-groups>
                 <?php foreach ($groupedItems as $group): ?>
                     <section class="menu-group" data-category-group="<?= esc($group['id']) ?>">
-                        <h5 class="border-bottom pb-3 mb-3"><?= esc($group['label']) ?></h5>
+                        <h5 class="border-bottom pb-3 mb-3"> 📁 <?= esc($group['label']) ?></h5>
                         <div class="row g-3">
                             <?php foreach ($group['items'] as $item): ?>
                                 <div class="col-12 md:col-6 lg:col-4">
-                                    <div class="card shadow overflow-hidden mb-5">
+                                    <div class="card shadow-sm overflow-hidden mb-5">
                                         <?php if (! empty($item['image_path'])): ?>
                                             <img
-                                                style="object-fit:cover; height:180px"
+                                                style="object-fit:cover; height:200px"
                                                 src="<?= esc(menu_asset_url($item['image_path'])) ?>"
                                                 alt="<?= esc($item['name']) ?>"
                                                 class="rounded-top w-full"
@@ -109,22 +109,25 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
                                             <span class="float-right badge <?= (int) $item['is_available'] === 1 ? 'bg-green-200' : 'bg-red-200' ?>">
                                                 <?= (int) $item['is_available'] === 1 ? 'Доступно' : 'Скрыто' ?>
                                             </span>
+                                            <p class="mb-2">📁 <?= esc($item['category_name'] ?? 'Без категории') ?></p>
                                             
-                                            <h4 class="text-lg mb-0"><?= esc($item['name']) ?></h4>
-
-                                            <p class="text-muted">
+                                            <h4 class="text-lg mb-2"><?= esc($item['name']) ?></h4>
+                                            <p class="mb-2"><?= esc($item['price']) ?>  </p>
+                                            <p class="text-secondary mb-4">
                                                 <?= esc($item['description'] ?: ' --- ') ?>
                                             </p>
 
-                                            <div class="">📁 <?= esc($item['category_name'] ?? 'Без категории') ?></div>
-
-                                            <div class="fw-semibold fs-5 mb-3 mt-3"><?= esc($item['price']) ?>  </div>
 
                                             <div class="d-grid grid-template-cols-2 gap-2">
-                                                <a class="btn btn-sm flex-1 btn-outline" href="<?= site_url('admin/menu-items/' . $item['id'] . '/edit') ?>">Изменить</a>
+                                                <a class="btn btn-sm flex-1 btn-outline" href="<?= site_url('admin/menu-items/' . $item['id'] . '/edit') ?>">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pencil-icon lucide-pencil"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/><path d="m15 5 4 4"/></svg> 
+                                                    Изменить
+                                                </a>
                                                 <form method="post" action="<?= site_url('admin/menu-items/' . $item['id'] . '/delete') ?>" class="flex-1 min-w-initial">
                                                     <?= csrf_field() ?>
-                                                    <button type="submit" class="btn btn-sm w-full btn-red-subtle" onclick="return confirm('Удалить этот пункт меню?')">Удалить</button>
+                                                    <button type="submit" class="btn btn-sm w-full btn-red-subtle" onclick="return confirm('Удалить этот пункт меню?')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-icon lucide-trash"><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>    
+                                                    Удалить</button>
                                                 </form>
                                             </div>
                                         </div>
