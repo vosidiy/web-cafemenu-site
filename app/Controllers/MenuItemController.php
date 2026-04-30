@@ -38,6 +38,7 @@ class MenuItemController extends BaseController
     public function new(): string
     {
         $cafeId = (int) $this->cafeService->getCurrentCafeId();
+        $cafe = $this->cafeService->getCurrentCafe();
 
         return view('admin/menu_items/form', [
             'title'        => 'Новое блюдо',
@@ -46,6 +47,7 @@ class MenuItemController extends BaseController
             'action'       => site_url('admin/menu-items'),
             'categories'   => $this->categories->getByCafe($cafeId),
             'languages'    => $this->cafeLanguages->getByCafe($cafeId),
+            'currencyName' => $cafe['currency_name'] ?? null,
         ]);
     }
 
@@ -57,6 +59,7 @@ class MenuItemController extends BaseController
     public function edit(int $id): string
     {
         $cafeId = (int) $this->cafeService->getCurrentCafeId();
+        $cafe = $this->cafeService->getCurrentCafe();
         $item = $this->items->findByCafe($cafeId, $id);
 
         if ($item === null) {
@@ -70,6 +73,7 @@ class MenuItemController extends BaseController
             'action'       => site_url('admin/menu-items/' . $id),
             'categories'   => $this->categories->getByCafe($cafeId),
             'languages'    => $this->cafeLanguages->getByCafe($cafeId),
+            'currencyName' => $cafe['currency_name'] ?? null,
         ]);
     }
 

@@ -58,7 +58,7 @@
                     $selectedLanguages[(int) ($languageRow['sort_order'] ?? 0)] = $languageRow['language_code'] ?? $languageRow['code'];
                 }
             ?>
-            <div class="row">
+            <div class="row" id="languages">
                 <div class="col-md-4 mb-3">
                     <label class="form-label">Язык по умолчанию</label>
                     <select name="languages[]" class="form-select" required>

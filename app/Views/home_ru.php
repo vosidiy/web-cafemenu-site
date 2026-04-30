@@ -5,6 +5,7 @@ $canonicalUrl = site_url('ru');
 $englishUrl = base_url('/');
 $ogImage = base_url('img/intro.png');
 $contactUrl = 'https://t.me/vosidiy?text=Здравствуйте, мне нужна помощь по CafeMenu';
+$tg_channel = 'https://t.me/cafemenu_uz';
 $faqItems = [
     [
         'question' => 'Что такое CafeMenu?',
@@ -45,7 +46,7 @@ $organizationSchema = [
     'contactPoint' => [
         '@type' => 'ContactPoint',
         'contactType' => 'sales',
-        'url' => $contactUrl,
+        'url' => $tg_channel,
         'availableLanguage' => ['ru', 'en', 'uz'],
     ],
 ];

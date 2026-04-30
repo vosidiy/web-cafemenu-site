@@ -149,7 +149,7 @@ class AuthController extends BaseController
             'username' => $cafe['username'],
         ]);
 
-        return redirect()->to(site_url('admin'))->with('success', 'Вход выполнен успешно.');
+        return redirect()->to(site_url('admin'));
     }
 
     public function logout()

@@ -53,31 +53,30 @@
     </div>  <!-- container .// -->
 </header>
 
+<main class="container">
 
-<main class="container py-5">
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert p-2 alert-success">  ✅  <?= esc(session()->getFlashdata('success')) ?></div>
-    <?php endif; ?>
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert p-2 alert-success">  ✅  <?= esc(session()->getFlashdata('success')) ?></div>
+<?php endif; ?>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert p-2 alert-danger"> ⚠️ <?= esc(session()->getFlashdata('error')) ?></div>
-    <?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert p-2 alert-danger"> ⚠️ <?= esc(session()->getFlashdata('error')) ?></div>
+<?php endif; ?>
 
-    <?php $errors = session()->getFlashdata('errors') ?? []; ?>
-    <?php if ($errors !== []): ?>
-        <div class="alert p-2 alert-danger">
-            <div class="fw-semibold mb-2"> ⚠️ Исправьте следующие ошибки:</div>
-            <ul class="mb-0">
-                <?php foreach ($errors as $error): ?>
-                    <li><?= esc($error) ?></li>
-                <?php endforeach; ?>
-            </ul>
-        </div>
-    <?php endif; ?>
+<?php $errors = session()->getFlashdata('errors') ?? []; ?>
+<?php if ($errors !== []): ?>
+    <div class="alert alert-danger">
+        <h6 class="mb-1">Исправьте следующие ошибки:</h6>
+        <?php foreach ($errors as $error): ?>
+        <p class="mb-1">  ⚠️   <?= esc($error) ?></p>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
 
-    <?= $this->renderSection('content') ?>
+<?= $this->renderSection('content') ?>
+
+
 </main>
-
 
 <script>
     // Mobile menu  toggle
