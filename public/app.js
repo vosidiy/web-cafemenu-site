@@ -20,6 +20,12 @@
           name: config.defaultCafeName ?? 'Меню ресторана',
           slogan: '',
           currency: 'UZS',
+          extra_fee: {
+            enabled: false,
+            type: null,
+            value: null,
+            translations: {},
+          },
         },
         meta: {
           username: '',
@@ -86,7 +92,7 @@
         return this.meta.languages ?? [];
       },
       defaultLanguage() {
-        return this.meta.default_language || 'ru';
+        return this.meta.default_language || 'en';
       },
       currentDirection() {
         const selected = this.availableLanguages.find((language) => language.code === this.selectedLanguage);
@@ -110,10 +116,51 @@
       cartHasItems() {
         return this.cartItemCount > 0;
       },
-      cartTotal() {
+      extraFeeConfig() {
+        return this.cafe.extra_fee ?? {
+          enabled: false,
+          type: null,
+          value: null,
+          translations: {},
+        };
+      },
+      extraFeeEnabled() {
+        return this.extraFeeConfig.enabled === true;
+      },
+      cartSubtotal() {
         return this.cartItems.reduce((total, item) => {
           return total + Number(item.price ?? 0) * item.quantity;
         }, 0);
+      },
+      cartFeeAmount() {
+        if (!this.cartHasItems || !this.extraFeeEnabled) {
+          return 0;
+        }
+
+        const feeValue = Number(this.extraFeeConfig.value ?? 0);
+
+        if (!Number.isFinite(feeValue) || feeValue <= 0) {
+          return 0;
+        }
+
+        if (this.extraFeeConfig.type === 'fixed') {
+          return this.roundCurrency(feeValue);
+        }
+
+        if (this.extraFeeConfig.type === 'percent') {
+          return this.roundCurrency((this.cartSubtotal * feeValue) / 100);
+        }
+
+        return 0;
+      },
+      cartGrandTotal() {
+        return this.roundCurrency(this.cartSubtotal + this.cartFeeAmount);
+      },
+      showCartFeeBreakdown() {
+        return this.extraFeeEnabled && this.cartHasItems;
+      },
+      cartFeeLabel() {
+        return this.resolveText(this.extraFeeConfig.translations, 'label') || 'Доп. сбор';
       },
       cartBarTitle() {
         if (!this.cartHasItems) {
@@ -233,6 +280,11 @@
       categoryName(category) {
         return this.resolveText(category.translations, 'name') || '...';
       },
+      categoryIcon(category) {
+        return typeof category?.icon_url === 'string' && category.icon_url.trim() !== ''
+          ? category.icon_url
+          : '';
+      },
       itemName(item) {
         return this.resolveText(item.translations, 'name') || '...';
       },
@@ -346,8 +398,17 @@
         }
 
         return new Intl.NumberFormat('en-US', {
-          maximumFractionDigits: 0,
+          maximumFractionDigits: 2,
         }).format(numericPrice);
+      },
+      roundCurrency(value) {
+        const numericValue = Number(value ?? 0);
+
+        if (!Number.isFinite(numericValue)) {
+          return 0;
+        }
+
+        return Math.round(numericValue * 100) / 100;
       },
       formatUpdatedAt(value) {
         if (!value) {

@@ -25,6 +25,9 @@ class CafeModel extends Model
         'theme_style',
         'address_text',
         'location_url',
+        'extra_fee_enabled',
+        'extra_fee_type',
+        'extra_fee_value',
         'menu_updated_at',
         'status',
     ];
@@ -43,6 +46,9 @@ class CafeModel extends Model
         'theme_style'   => 'required|max_length[20]',
         'address_text'  => 'permit_empty|max_length[255]',
         'location_url'  => 'permit_empty|max_length[500]|valid_url_strict',
+        'extra_fee_enabled' => 'permit_empty|in_list[0,1]',
+        'extra_fee_type'    => 'permit_empty|in_list[fixed,percent]',
+        'extra_fee_value'   => 'permit_empty|decimal|greater_than[0]',
         'status'        => 'required|in_list[active,inactive]',
     ];
 

@@ -7,6 +7,9 @@ use App\Models\CategoryTranslationModel;
 use App\Services\CafeLanguageService;
 use App\Services\CafeService;
 use App\Services\CategoryService;
+use App\Services\FileUploadService;
+use CodeIgniter\Exceptions\PageNotFoundException;
+use RuntimeException;
 
 class CategoryController extends BaseController
 {
@@ -16,6 +19,7 @@ class CategoryController extends BaseController
         private readonly CategoryTranslationModel $categoryTranslations = new CategoryTranslationModel(),
         private readonly CafeLanguageService $cafeLanguages = new CafeLanguageService(),
         private readonly CategoryService $categoryService = new CategoryService(),
+        private readonly FileUploadService $uploads = new FileUploadService(),
     ) {
     }
 
@@ -43,16 +47,7 @@ class CategoryController extends BaseController
 
     public function create()
     {
-        $cafeId = $this->cafeService->getCurrentCafeId();
-        $data = $this->collectPayload($cafeId);
-
-        if (! $this->categoryService->create($cafeId, $data)) {
-            return redirect()->back()->withInput()->with('errors', $this->categoryService->getErrors());
-        }
-
-        $this->cafeService->touchMenuUpdatedAt($cafeId);
-
-        return redirect()->to(site_url('admin/categories'))->with('success', 'Категория создана.');
+        return $this->persist();
     }
 
     public function edit(int $id): string
@@ -70,16 +65,7 @@ class CategoryController extends BaseController
 
     public function update(int $id)
     {
-        $category = $this->findOwnedCategoryOrFail($id);
-        $data = $this->collectPayload((int) $category['cafe_id']);
-
-        if (! $this->categoryService->update($category, $data)) {
-            return redirect()->back()->withInput()->with('errors', $this->categoryService->getErrors());
-        }
-
-        $this->cafeService->touchMenuUpdatedAt((int) $category['cafe_id']);
-
-        return redirect()->to(site_url('admin/categories'))->with('success', 'Категория обновлена.');
+        return $this->persist($id);
     }
 
     public function delete(int $id)
@@ -91,6 +77,50 @@ class CategoryController extends BaseController
         return redirect()->to(site_url('admin/categories'))->with('success', 'Категория удалена.');
     }
 
+    private function persist(?int $id = null)
+    {
+        $cafe = $this->cafeService->getCurrentCafe();
+
+        if ($cafe === null) {
+            return redirect()->to(site_url('login'));
+        }
+
+        $cafeId = (int) $cafe['id'];
+        $category = $id !== null ? $this->findOwnedCategoryOrFail($id) : null;
+        $data = $this->collectPayload($cafeId);
+
+        try {
+            $iconPath = $this->storeCategoryIcon($cafe['username']);
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
+
+        if ($iconPath !== null) {
+            $data['icon_path'] = $iconPath;
+        } elseif ($category !== null && $this->request->getPost('remove_icon')) {
+            $data['icon_path'] = null;
+        } elseif ($category !== null && ! empty($category['icon_path'])) {
+            $data['icon_path'] = $category['icon_path'];
+        } else {
+            $data['icon_path'] = null;
+        }
+
+        if ($category === null) {
+            $saved = $this->categoryService->create($cafeId, $data);
+        } else {
+            $saved = $this->categoryService->update($category, $data);
+        }
+
+        if (! $saved) {
+            return redirect()->back()->withInput()->with('errors', $this->categoryService->getErrors());
+        }
+
+        $this->cafeService->touchMenuUpdatedAt($cafeId);
+
+        return redirect()->to(site_url('admin/categories'))
+            ->with('success', $category === null ? 'Категория создана.' : 'Категория обновлена.');
+    }
+
     private function collectPayload(int $cafeId): array
     {
         return [
@@ -99,6 +129,23 @@ class CategoryController extends BaseController
             'is_active'  => $this->request->getPost('is_active') ? 1 : 0,
             'translations' => $this->collectTranslations(),
         ];
+    }
+
+    protected function storeCategoryIcon(string $username): ?string
+    {
+        $file = $this->request->getFile('icon_file');
+
+        if ($file === null || ! $file->isValid() || $file->getError() === UPLOAD_ERR_NO_FILE) {
+            return null;
+        }
+
+        $mimeType = $file->getMimeType();
+
+        if (! in_array($mimeType, ['image/png', 'image/svg+xml'], true)) {
+            throw new RuntimeException('Please upload a valid PNG or SVG icon.');
+        }
+
+        return $this->uploads->storeUploadedImage($file, $username);
     }
 
     private function collectTranslations(): array
@@ -119,7 +166,7 @@ class CategoryController extends BaseController
         $category = $this->categories->findByCafe((int) $this->cafeService->getCurrentCafeId(), $id);
 
         if ($category === null) {
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound();
+            throw PageNotFoundException::forPageNotFound();
         }
 
         return $category;

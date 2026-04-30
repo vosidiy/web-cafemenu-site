@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\CategoryTranslationModel;
+use App\Models\CafeFeeTranslationModel;
 
-class CategoryTranslationService
+class CafeFeeTranslationService
 {
     private array $errors = [];
 
     public function __construct(
-        private readonly CategoryTranslationModel $translations = new CategoryTranslationModel(),
+        private readonly CafeFeeTranslationModel $translations = new CafeFeeTranslationModel(),
     ) {
     }
 
@@ -18,7 +18,12 @@ class CategoryTranslationService
         return $this->errors;
     }
 
-    public function syncForCategory(int $categoryId, array $cafeLanguages, array $payload): bool
+    public function getByCafeId(int $cafeId, array $languageCodes = []): array
+    {
+        return $this->translations->getByCafeId($cafeId, $languageCodes);
+    }
+
+    public function syncForCafe(int $cafeId, array $cafeLanguages, array $payload, bool $requireDefaultLabel): bool
     {
         $languageCodes = array_map(
             static fn (array $language): string => $language['language_code'] ?? $language['code'],
@@ -30,21 +35,21 @@ class CategoryTranslationService
         $errors = [];
 
         foreach ($languageCodes as $code) {
-            $name = trim((string) ($payload[$code]['name'] ?? ''));
+            $label = trim((string) ($payload[$code]['label'] ?? ''));
 
-            if ($code === $defaultLanguage && $name === '') {
-                $errors['translations.' . $code . '.name'] = 'Название категории на языке по умолчанию обязательно.';
+            if ($requireDefaultLabel && $code === $defaultLanguage && $label === '') {
+                $errors['fee_translations.' . $code . '.label'] = 'Название доп. сбора на языке по умолчанию обязательно.';
                 continue;
             }
 
-            if ($code !== $defaultLanguage && $name === '') {
+            if ($label === '') {
                 continue;
             }
 
             $rows[] = [
-                'category_id'   => $categoryId,
+                'cafe_id'       => $cafeId,
                 'language_code' => $code,
-                'name'          => $name,
+                'label'         => $label,
             ];
         }
 
@@ -54,7 +59,7 @@ class CategoryTranslationService
             return false;
         }
 
-        $this->translations->where('category_id', $categoryId)->delete();
+        $this->translations->where('cafe_id', $cafeId)->delete();
 
         if ($rows !== [] && $this->translations->insertBatch($rows) === false) {
             $this->errors = $this->translations->errors();

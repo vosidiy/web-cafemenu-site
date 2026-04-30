@@ -27,6 +27,13 @@ if (! function_exists('menu_old_translation')) {
     }
 }
 
+if (! function_exists('menu_old_fee_translation')) {
+    function menu_old_fee_translation(string $languageCode, string $field, mixed $default = ''): mixed
+    {
+        return old('fee_translations.' . $languageCode . '.' . $field) ?? $default;
+    }
+}
+
 if (! function_exists('menu_supported_languages')) {
     function menu_supported_languages(): array
     {
@@ -44,9 +51,18 @@ if (! function_exists('menu_supported_language_codes')) {
     }
 }
 
-if (! function_exists('menu_default_language')) {
-    function menu_default_language(array $languages, string $fallback = 'ru'): string
+if (! function_exists('menu_configured_default_language')) {
+    function menu_configured_default_language(): string
     {
+        return (new LanguageCatalogService())->getDefaultCafeLanguageCode();
+    }
+}
+
+if (! function_exists('menu_default_language')) {
+    function menu_default_language(array $languages, ?string $fallback = null): string
+    {
+        $fallback ??= menu_configured_default_language();
+
         foreach ($languages as $language) {
             if ((int) ($language['sort_order'] ?? 0) === 1) {
                 return (string) ($language['language_code'] ?? $language['code'] ?? $fallback);

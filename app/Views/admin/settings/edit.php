@@ -63,7 +63,7 @@
                     <label class="form-label">Язык по умолчанию</label>
                     <select name="languages[]" class="form-select" required>
                         <?php foreach ($supportedLanguages as $language): ?>
-                            <option value="<?= esc($language['code']) ?>" <?= menu_old('languages.0', $selectedLanguages[1] ?? 'ru') === $language['code'] ? 'selected' : '' ?>>
+                            <option value="<?= esc($language['code']) ?>" <?= menu_old('languages.0', $selectedLanguages[1] ?? menu_configured_default_language()) === $language['code'] ? 'selected' : '' ?>>
                                 <?= esc($language['flag']) ?> <?= esc($language['native_label']) ?> (<?= esc($language['label']) ?>)
                             </option>
                         <?php endforeach; ?>
@@ -90,6 +90,65 @@
                             </option>
                         <?php endforeach; ?>
                     </select>
+                </div>
+            </div>
+            <div class="card bg-light border-0 mb-4">
+                <div class="card-body">
+                    <h3 class="h5 mb-3">Дополнительный сбор в корзине</h3>
+                    <div class="form-check mb-3">
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="extra_fee_enabled"
+                            id="extraFeeEnabled"
+                            value="1"
+                            <?= (int) menu_old('extra_fee_enabled', $cafe['extra_fee_enabled'] ?? 0) === 1 ? 'checked' : '' ?>
+                        >
+                        <label class="form-check-label" for="extraFeeEnabled">Включить доп. сбор</label>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Тип сбора</label>
+                            <select name="extra_fee_type" class="form-select">
+                                <option value="">Не выбран</option>
+                                <option value="fixed" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'fixed' ? 'selected' : '' ?>>Фиксированная сумма</option>
+                                <option value="percent" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'percent' ? 'selected' : '' ?>>Процент от суммы</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Значение</label>
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0.01"
+                                name="extra_fee_value"
+                                class="form-control"
+                                value="<?= esc((string) menu_old('extra_fee_value', $cafe['extra_fee_value'] ?? '')) ?>"
+                            >
+                            <div class="form-text">Для процента укажите число без знака `%`, например `5`.</div>
+                        </div>
+                    </div>
+                    <?php $defaultLanguage = menu_old('languages.0', $selectedLanguages[1] ?? menu_configured_default_language()); ?>
+                    <?php foreach ($cafeLanguages as $language): ?>
+                        <?php
+                            $languageCode = $language['language_code'] ?? $language['code'];
+                            $savedTranslation = $feeTranslations[$languageCode] ?? [];
+                        ?>
+                        <div class="mb-3">
+                            <label class="form-label">
+                                Название сбора: <?= esc(($language['flag'] ?? '') . ' ' . $language['native_label']) ?>
+                                <?php if ($languageCode === $defaultLanguage): ?>
+                                    <span class="text-danger">*</span>
+                                <?php endif; ?>
+                            </label>
+                            <input
+                                type="text"
+                                name="fee_translations[<?= esc($languageCode) ?>][label]"
+                                class="form-control"
+                                value="<?= esc(menu_old_fee_translation($languageCode, 'label', $savedTranslation['label'] ?? '')) ?>"
+                            >
+                        </div>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <div class="row">

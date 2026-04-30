@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\CafeModel;
+use App\Services\CafeFeeTranslationService;
 use App\Services\CafeLanguageService;
 use App\Services\CafeService;
 use App\Services\FileUploadService;
@@ -16,16 +17,20 @@ class CafeSettingsController extends BaseController
         private readonly FileUploadService $uploads = new FileUploadService(),
         private readonly CafeModel $cafes = new CafeModel(),
         private readonly CafeLanguageService $cafeLanguages = new CafeLanguageService(),
+        private readonly CafeFeeTranslationService $feeTranslations = new CafeFeeTranslationService(),
     ) {
     }
 
     public function edit(): string
     {
+        $cafeId = (int) $this->cafeService->getCurrentCafeId();
+
         return view('admin/settings/edit', [
             'title'              => 'Настройки кафе',
             'cafe'               => $this->cafeService->getCurrentCafe(),
             'supportedLanguages' => $this->cafeLanguages->getSupportedLanguages(),
-            'cafeLanguages'      => $this->cafeLanguages->getByCafe((int) $this->cafeService->getCurrentCafeId()),
+            'cafeLanguages'      => $this->cafeLanguages->getByCafe($cafeId),
+            'feeTranslations'    => $this->feeTranslations->getByCafeId($cafeId),
         ]);
     }
 
@@ -38,18 +43,34 @@ class CafeSettingsController extends BaseController
         }
 
         $data = [
-            'phone'         => trim((string) $this->request->getPost('phone')),
-            'person_name'   => trim((string) $this->request->getPost('person_name')),
-            'cafe_name'     => trim((string) $this->request->getPost('cafe_name')),
-            'slogan'        => trim((string) $this->request->getPost('slogan')),
-            'currency_name' => trim((string) $this->request->getPost('currency_name')) ?: 'UZS',
-            'theme_style'   => trim((string) $this->request->getPost('theme_style')) ?: 'theme1',
-            'address_text'  => trim((string) $this->request->getPost('address_text')),
-            'location_url'  => trim((string) $this->request->getPost('location_url')),
-            'status'        => 'active',
+            'phone'             => trim((string) $this->request->getPost('phone')),
+            'person_name'       => trim((string) $this->request->getPost('person_name')),
+            'cafe_name'         => trim((string) $this->request->getPost('cafe_name')),
+            'slogan'            => trim((string) $this->request->getPost('slogan')),
+            'currency_name'     => trim((string) $this->request->getPost('currency_name')) ?: 'UZS',
+            'theme_style'       => trim((string) $this->request->getPost('theme_style')) ?: 'theme1',
+            'address_text'      => trim((string) $this->request->getPost('address_text')),
+            'location_url'      => trim((string) $this->request->getPost('location_url')),
+            'extra_fee_enabled' => $this->request->getPost('extra_fee_enabled') ? 1 : 0,
+            'status'            => 'active',
         ];
 
         $languageCodes = $this->cafeLanguages->normalizeLanguageCodes((array) $this->request->getPost('languages'));
+        $cafeLanguages = $this->buildCafeLanguagesForPayload($languageCodes);
+        $feeType = strtolower(trim((string) $this->request->getPost('extra_fee_type')));
+        $feeValue = trim((string) $this->request->getPost('extra_fee_value'));
+        $feeTranslations = $this->collectFeeTranslations();
+
+        $errors = $this->validateExtraFee($data['extra_fee_enabled'] === 1, $feeType, $feeValue);
+
+        if ($errors !== []) {
+            return redirect()->back()->withInput()->with('errors', $errors);
+        }
+
+        if ($data['extra_fee_enabled'] === 1) {
+            $data['extra_fee_type'] = $feeType;
+            $data['extra_fee_value'] = $feeValue;
+        }
 
         try {
             $logoPath = $this->uploads->storeUploadedImage($this->request->getFile('logo_file'), $cafe['username']);
@@ -78,6 +99,12 @@ class CafeSettingsController extends BaseController
             $db->transRollback();
 
             return redirect()->back()->withInput()->with('errors', $this->cafeLanguages->getErrors());
+        }
+
+        if (! $this->feeTranslations->syncForCafe((int) $cafe['id'], $cafeLanguages, $feeTranslations, $data['extra_fee_enabled'] === 1)) {
+            $db->transRollback();
+
+            return redirect()->back()->withInput()->with('errors', $this->feeTranslations->getErrors());
         }
 
         $db->transCommit();
@@ -125,5 +152,51 @@ class CafeSettingsController extends BaseController
         }
 
         return redirect()->to(site_url('admin/settings'))->with('success', 'Пароль успешно обновлен.');
+    }
+
+    private function validateExtraFee(bool $isEnabled, string $type, string $value): array
+    {
+        if (! $isEnabled) {
+            return [];
+        }
+
+        $errors = [];
+
+        if (! in_array($type, ['fixed', 'percent'], true)) {
+            $errors['extra_fee_type'] = 'Выберите тип доп. сбора.';
+        }
+
+        if ($value === '' || ! is_numeric($value) || (float) $value <= 0) {
+            $errors['extra_fee_value'] = 'Укажите значение доп. сбора больше 0.';
+        }
+
+        return $errors;
+    }
+
+    private function collectFeeTranslations(): array
+    {
+        $translations = [];
+
+        foreach ((array) $this->request->getPost('fee_translations') as $languageCode => $row) {
+            $translations[(string) $languageCode] = [
+                'label' => trim((string) ($row['label'] ?? '')),
+            ];
+        }
+
+        return $translations;
+    }
+
+    private function buildCafeLanguagesForPayload(array $languageCodes): array
+    {
+        $rows = [];
+
+        foreach ($languageCodes as $index => $code) {
+            $rows[] = [
+                'language_code' => $code,
+                'sort_order'    => $index + 1,
+            ];
+        }
+
+        return $rows;
     }
 }

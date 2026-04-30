@@ -11,7 +11,7 @@
             <div class="card-body">
                 <form method="post" action="<?= esc($action) ?>" enctype="multipart/form-data">
                     <?= csrf_field() ?>
-                    <?php $defaultLanguage = menu_default_language($languages, 'ru'); ?>
+                    <?php $defaultLanguage = menu_default_language($languages, menu_configured_default_language()); ?>
                     <div class="row">
                         <div class="col-md-4 mb-3">
                             <label class="form-label">Цена</label>

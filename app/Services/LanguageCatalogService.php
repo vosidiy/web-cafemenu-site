@@ -2,8 +2,12 @@
 
 namespace App\Services;
 
+use RuntimeException;
+
 class LanguageCatalogService
 {
+    private const DEFAULT_CAFE_LANGUAGE_CODE = 'en';
+
     /**
      * @return array<string, array{code: string, label: string, native_label: string, dir: string, flag: string}>
      */
@@ -124,6 +128,17 @@ class LanguageCatalogService
     public function getSupportedLanguages(): array
     {
         return array_values($this->getSupportedLanguagesIndexed());
+    }
+
+    public function getDefaultCafeLanguageCode(): string
+    {
+        $defaultLanguageCode = self::DEFAULT_CAFE_LANGUAGE_CODE;
+
+        if (! array_key_exists($defaultLanguageCode, $this->getSupportedLanguagesIndexed())) {
+            throw new RuntimeException('Configured default cafe language is not present in the supported language catalog.');
+        }
+
+        return $defaultLanguageCode;
     }
 
     public function getLanguage(string $code): ?array

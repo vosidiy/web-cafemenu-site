@@ -25,7 +25,7 @@ class MenuItemTranslationService
             $cafeLanguages,
         );
 
-        $defaultLanguage = menu_default_language($cafeLanguages, 'ru');
+        $defaultLanguage = menu_default_language($cafeLanguages, menu_configured_default_language());
         $rows = [];
         $errors = [];
 

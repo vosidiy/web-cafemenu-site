@@ -16,6 +16,9 @@ CREATE TABLE `cafes` (
   `theme_style` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme1',
   `address_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `location_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `extra_fee_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `extra_fee_type` enum('fixed','percent') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `extra_fee_value` decimal(10,2) DEFAULT NULL,
   `menu_updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `status` enum('active','inactive') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -30,6 +33,7 @@ CREATE TABLE `categories` (
   `cafe_id` bigint UNSIGNED NOT NULL,
   `sort_order` int NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `icon_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -98,4 +102,18 @@ CREATE TABLE `menu_item_translations` (
   KEY `idx_menu_item_translations_menu_item_id` (`menu_item_id`),
   KEY `idx_menu_item_translations_language_code` (`language_code`),
   CONSTRAINT `fk_menu_item_translations_menu_item` FOREIGN KEY (`menu_item_id`) REFERENCES `menu_items` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `cafe_fee_translations` (
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `cafe_id` bigint UNSIGNED NOT NULL,
+  `language_code` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `label` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_cafe_fee_translation` (`cafe_id`, `language_code`),
+  KEY `idx_cafe_fee_translations_cafe_id` (`cafe_id`),
+  KEY `idx_cafe_fee_translations_language_code` (`language_code`),
+  CONSTRAINT `fk_cafe_fee_translations_cafe` FOREIGN KEY (`cafe_id`) REFERENCES `cafes` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

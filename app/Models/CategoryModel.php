@@ -15,6 +15,7 @@ class CategoryModel extends Model
         'cafe_id',
         'sort_order',
         'is_active',
+        'icon_path',
     ];
 
     protected bool $allowEmptyInserts = false;
@@ -24,6 +25,7 @@ class CategoryModel extends Model
         'cafe_id'     => 'required|is_natural_no_zero',
         'sort_order'  => 'required|integer',
         'is_active'   => 'required|in_list[0,1]',
+        'icon_path'   => 'permit_empty|max_length[255]',
     ];
 
     protected $skipValidation = false;

@@ -9,9 +9,9 @@ The app has two main surfaces:
 - Marketing pages for the product landing experience.
 - A tenant-based admin and public menu system for individual cafes.
 
-The multi-tenant model is simple: one cafe account maps to one row in `cafes`, and the cafe `username` serves both as the login identifier and the public URL slug.
+The multi-tenant model is simple: one cafe account maps to one row in `cafes`, and the cafe `username` serves both as the login identifier and the public URL slug. A cafe may also have an optional 6-digit pairing `code` for app-friendly JSON access.
 
-Menu content is multilingual per cafe. Each cafe can enable 1 to 3 languages in `cafe_languages`, and only category names, menu item names, and menu item descriptions are translated.
+Menu content is multilingual per cafe. Each cafe can enable 1 to 3 languages in `cafe_languages`, and only category names, menu item names, menu item descriptions, and optional cart-fee labels are translated.
 
 Key implementation facts:
 
@@ -32,15 +32,13 @@ The marketing controllers render landing-page views and show recently created ac
 
 ### Admin surface
 
-All admin routes live under `/admin`.
+Auth routes are top-level:
 
-Unauthenticated routes:
-
-- `GET /admin/register`
-- `POST /admin/register`
-- `GET /admin/login`
-- `POST /admin/login`
-- `GET /admin/logout`
+- `GET /register`
+- `POST /register`
+- `GET /login`
+- `POST /login`
+- `GET /logout`
 
 Authenticated routes guarded by `adminauth`:
 
@@ -58,6 +56,7 @@ Each cafe is published under `/{username}`.
 - `GET /{username}` -> public HTML shell
 - `GET /{username}/menu.json` -> public JSON
 - `GET /{username}/menu` -> JSON alias to the same controller
+- `GET /code/{6-digit-code}` -> public JSON alias by cafe pairing code
 - `GET /{username}/manifest.webmanifest` -> generated PWA manifest
 - `GET /{username}/sw.js` -> generated service worker
 
@@ -68,8 +67,8 @@ Routes are defined in `app/Config/Routes.php`. Auto-routing is disabled in `app/
 Route ordering matters:
 
 1. Marketing routes are declared first.
-2. Admin routes are grouped under `/admin`.
-3. Tenant PWA and JSON routes are declared next.
+2. Top-level auth routes and `/admin` routes are declared next.
+3. Code-based and tenant PWA/JSON routes are declared next.
 4. The final catch-all route is `GET /(:segment)` -> `PublicController::index/$1`.
 
 This means:
@@ -87,23 +86,26 @@ Registration and login are handled by `AuthController`.
 Registration flow:
 
 1. Read POST values for username, phone, person name, cafe name, password, currency, and theme.
-2. Validate request data.
-3. Hash the password with `password_hash()`.
-4. Insert a row into `cafes`.
-5. Insert the default cafe language row (`ru`).
-6. Regenerate the session.
-7. Store `cafe_id` and `username` in session.
-8. Redirect to `/admin`.
+2. Normalize username by trimming, removing all whitespace, and lowercasing.
+3. Validate request data using the normalized username.
+4. Hash the password with `password_hash()`.
+5. Attempt to insert a row into `cafes` with a randomly generated 6-digit pairing code.
+6. If code collisions keep happening, insert the cafe with `code = NULL` and continue registration.
+7. Insert the default cafe language row from the centralized app language configuration, currently `en`.
+8. Regenerate the session.
+9. Store `cafe_id` and normalized `username` in session.
+10. Redirect to `/admin`.
 
 Login flow:
 
-1. Look up cafe by username.
-2. Ensure the cafe exists, is `active`, and the password verifies.
-3. Regenerate the session.
-4. Store `cafe_id` and `username` in session.
-5. Redirect to `/admin`.
+1. Normalize the submitted username by trimming, removing all whitespace, and lowercasing.
+2. Look up cafe by normalized username.
+3. Ensure the cafe exists, is `active`, and the password verifies.
+4. Regenerate the session.
+5. Store `cafe_id` and `username` in session.
+6. Redirect to `/admin`.
 
-Protected admin routes use `AdminAuthFilter`, which redirects unauthenticated users to `/admin/login`.
+Protected admin routes use `AdminAuthFilter`, which redirects unauthenticated users to `/login`.
 
 ### Admin CRUD flow
 
@@ -113,7 +115,9 @@ Category and menu item CRUD follow the same tenant pattern:
 2. Load or mutate only rows that belong to that cafe.
 3. Save non-translatable fields in `categories` / `menu_items`.
 4. Save translations in `category_translations` / `menu_item_translations`.
-5. On successful create, update, delete, or settings change, call `CafeService::bumpMenuVersion()`.
+5. On successful create, update, delete, or settings change, call `CafeService::touchMenuUpdatedAt()`.
+
+Cafe settings updates also persist tenant-scoped language rows and optional cart-fee label translations in `cafe_fee_translations`.
 
 Ownership enforcement is implemented in code:
 
@@ -132,6 +136,7 @@ The public menu is split into shell and data:
 5. The Vue app fetches `/{username}/menu.json`.
 6. The client chooses a menu language from localStorage, browser preference, or the cafe default language.
 7. The client renders categories, translated menu items, and a local in-browser selection cart.
+8. When configured, the client applies the cafe's fixed or percentage cart fee to the displayed grand total.
 
 The cart is client-side only. There is no ordering, checkout, or server-side cart persistence.
 
@@ -151,7 +156,7 @@ The public shell registers the service worker from `public/app.js` when supporte
 Controllers are thin request handlers.
 
 - `Home` renders landing pages and recent active cafes.
-- `AuthController` handles registration, login, and logout.
+- `AuthController` handles registration, login, logout, username normalization, and best-effort pairing-code generation.
 - `AdminController` loads dashboard data and public URLs for the current cafe.
 - `CafeSettingsController` updates cafe profile fields, logo, PWA icon, and password.
 - `CategoryController` manages category CRUD for the current cafe.
@@ -165,10 +170,11 @@ Controllers are thin request handlers.
 - `CafeService`
   - Resolves the current cafe from session.
   - Resolves an active cafe by username.
-  - Increments `menu_version` and updates `menu_updated_at`.
+  - Resolves an active cafe by pairing code.
+  - Updates `menu_updated_at`.
 
 - `MenuBuilderService`
-  - Resolves the active cafe.
+  - Resolves the active cafe by username or pairing code.
   - Resolves enabled cafe languages and default language.
   - Fetches active categories and public menu items.
   - Builds the multilingual JSON structure consumed by the public UI and external clients.
@@ -177,6 +183,10 @@ Controllers are thin request handlers.
   - Exposes the fixed language catalog.
   - Validates cafe language selection.
   - Persists ordered `cafe_languages` rows.
+
+- `CafeFeeTranslationService`
+  - Persists cart-fee labels for the currently enabled cafe languages.
+  - Requires a default-language label only when the extra fee is enabled.
 
 - `CategoryService` / `MenuItemService`
   - Save base records and translation records transactionally.
@@ -190,8 +200,12 @@ Controllers are thin request handlers.
 
 - `CafeModel`
   - Encapsulates the `cafes` table.
-  - Provides `findActiveByUsername()` and `findRecentActive()`.
+  - Provides `findActiveByUsername()`, `findActiveByCode()`, and `findRecentActive()`.
   - Validates username, phone, status, theme, URL fields, and related profile data.
+
+- `CafeFeeTranslationModel`
+  - Encapsulates the `cafe_fee_translations` table.
+  - Provides cafe-scoped access to translated cart-fee labels.
 
 - `CategoryModel`
   - Encapsulates the `categories` table.
@@ -209,11 +223,11 @@ Controllers are thin request handlers.
 
 - `AdminAuthFilter`
   - Allows requests only when session contains `cafe_id`.
-  - Redirects guests to `/admin/login`.
+  - Redirects guests to `/login`.
 
 - `MenuJsonThrottleFilter`
-  - Applies to `/{username}/menu.json` and `/{username}/menu`.
-  - Throttles by username and client IP using CodeIgniter throttler service.
+  - Applies to `/{username}/menu.json`, `/{username}/menu`, and `/code/{6-digit-code}`.
+  - Throttles by tenant identifier and client IP using CodeIgniter throttler service.
   - Returns HTTP `429` JSON when rate limit is exceeded.
 
 ### Helpers
@@ -257,6 +271,7 @@ Represents a single tenant account.
 Important fields:
 
 - `id`
+- `code`
 - `username`
 - `phone`
 - `person_name`
@@ -269,7 +284,6 @@ Important fields:
 - `theme_style`
 - `address_text`
 - `location_url`
-- `menu_version`
 - `menu_updated_at`
 - `status`
 - `created_at`
@@ -278,8 +292,9 @@ Important fields:
 Behavior:
 
 - `username` is unique.
+- `code` is nullable and unique when present.
 - `status` controls public visibility and login eligibility.
-- `menu_version` and `menu_updated_at` are used as menu freshness metadata for public consumers.
+- `menu_updated_at` is the menu freshness field for public consumers.
 
 #### `categories`
 
@@ -338,6 +353,7 @@ Behavior:
 - `sort_order = 1` is the cafe default language.
 - A cafe can have up to 3 rows, enforced in application logic.
 - `language_code` values come from the fixed app language catalog.
+- Newly registered cafes use the configured default language from the catalog service, currently `en`.
 
 #### `category_translations`
 
@@ -386,11 +402,10 @@ Effects:
 - Deleting a cafe deletes its categories and menu items.
 - Deleting a category does not delete menu items; affected items become uncategorized.
 
-### Versioning
+### Freshness Tracking
 
-`CafeService::bumpMenuVersion()` updates:
+`CafeService::touchMenuUpdatedAt()` updates:
 
-- `cafes.menu_version` by incrementing the current value
 - `cafes.menu_updated_at` to the current application time
 
 This is called after successful changes to:
@@ -412,20 +427,19 @@ Response shape:
 {
   "meta": {
     "username": "bestcafe",
-    "version": 5,
     "updated_at": "2026-04-02T14:30:00+05:00",
-    "default_language": "ru",
+    "default_language": "en",
     "languages": [
-      {
-        "code": "ru",
-        "label": "Russian",
-        "native_label": "Русский",
-        "dir": "ltr"
-      },
       {
         "code": "en",
         "label": "English",
         "native_label": "English",
+        "dir": "ltr"
+      },
+      {
+        "code": "ru",
+        "label": "Russian",
+        "native_label": "Русский",
         "dir": "ltr"
       },
       {
@@ -451,11 +465,11 @@ Response shape:
       "id": 1,
       "sort_order": 1,
       "translations": {
-        "ru": {
-          "name": "Напитки"
-        },
         "en": {
           "name": "Drinks"
+        },
+        "ru": {
+          "name": "Напитки"
         },
         "ar": {
           "name": "المشروبات"
@@ -472,13 +486,13 @@ Response shape:
       "is_available": true,
       "sort_order": 1,
       "translations": {
-        "ru": {
-          "name": "Капучино",
-          "description": "Горячий кофе"
-        },
         "en": {
           "name": "Cappuccino",
           "description": "Hot coffee"
+        },
+        "ru": {
+          "name": "Капучино",
+          "description": "Горячий кофе"
         },
         "ar": {
           "name": "كابتشينو",
@@ -496,6 +510,7 @@ Notes:
 - Clients must resolve visible text from `translations`, using `meta.default_language` as fallback.
 - `meta.languages` is ordered by cafe language `sort_order`.
 - `dir` is included so clients can switch content direction for RTL languages like Arabic.
+- `meta.version` is not emitted.
 
 ### Filtering rules
 
@@ -598,5 +613,5 @@ The repository also contains baseline example tests generated by the framework i
 - If the seeded or exported SQL dump is intentionally refreshed, update `database/database.sql`.
 - If the public JSON payload changes, update both this document and any relevant tests, especially `tests/feature/CafeMenuFlowTest.php`.
 - If new top-level or tenant routes are added, place them before the final `GET /(:segment)` catch-all route.
-- If new admin mutations affect public menu output, ensure they still bump `menu_version` and `menu_updated_at`.
+- If new admin mutations affect public menu output, ensure they still update `menu_updated_at`.
 - If upload behavior changes, keep stored path format and public URL generation in sync with `menu_asset_url()` and `FileUploadService`.

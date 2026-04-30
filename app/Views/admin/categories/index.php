@@ -12,6 +12,7 @@
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                 <tr>
+                    <th>Иконка</th>
                     <th>Название</th>
                     <th>Порядок сортировки</th>
                     <th>Статус</th>
@@ -20,10 +21,17 @@
                 </thead>
                 <tbody>
                 <?php if ($categories === []): ?>
-                    <tr><td colspan="4" class="text-center py-4 text-muted">Категории пока не созданы.</td></tr>
+                    <tr><td colspan="5" class="text-center py-4 text-muted">Категории пока не созданы.</td></tr>
                 <?php endif; ?>
                 <?php foreach ($categories as $category): ?>
                     <tr>
+                        <td>
+                            <?php if (! empty($category['icon_path'])): ?>
+                                <img src="<?= esc(menu_asset_url($category['icon_path'])) ?>" alt="<?= esc($category['name']) ?>" class="img-thumbnail" style="max-height: 44px; max-width: 44px;">
+                            <?php else: ?>
+                                <span class="text-muted">-</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= esc($category['name']) ?></td>
                         <td><?= esc($category['sort_order']) ?></td>
                         <td>

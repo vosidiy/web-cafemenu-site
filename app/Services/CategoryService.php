@@ -30,6 +30,7 @@ class CategoryService
             'cafe_id'    => $cafeId,
             'sort_order' => $payload['sort_order'],
             'is_active'  => $payload['is_active'],
+            'icon_path'  => $payload['icon_path'] ?? null,
         ];
 
         if ($this->categories->insert($baseData) === false) {
@@ -64,6 +65,7 @@ class CategoryService
             'cafe_id'    => (int) $category['cafe_id'],
             'sort_order' => $payload['sort_order'],
             'is_active'  => $payload['is_active'],
+            'icon_path'  => $payload['icon_path'] ?? null,
         ];
 
         if ($this->categories->update((int) $category['id'], $baseData) === false) {

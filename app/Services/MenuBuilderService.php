@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\CafeModel;
+use App\Models\CafeFeeTranslationModel;
 use App\Models\CafeLanguageModel;
 use App\Models\CategoryModel;
 use App\Models\CategoryTranslationModel;
@@ -14,6 +15,7 @@ class MenuBuilderService
 {
     public function __construct(
         private readonly CafeModel $cafes = new CafeModel(),
+        private readonly CafeFeeTranslationModel $feeTranslations = new CafeFeeTranslationModel(),
         private readonly CafeLanguageModel $cafeLanguages = new CafeLanguageModel(),
         private readonly CategoryModel $categories = new CategoryModel(),
         private readonly CategoryTranslationModel $categoryTranslations = new CategoryTranslationModel(),
@@ -49,20 +51,25 @@ class MenuBuilderService
     {
 
         $menuUpdatedAt = $cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? date('Y-m-d H:i:s');
+        $defaultLanguageCode = $this->languageCatalog->getDefaultCafeLanguageCode();
 
         $languages = $this->cafeLanguages->getByCafe((int) $cafe['id']);
 
         if ($languages === []) {
             $languages = [[
-                'language_code' => 'ru',
+                'language_code' => $defaultLanguageCode,
                 'sort_order'    => 1,
             ]];
         }
 
-        $defaultLanguage = menu_default_language($languages, 'ru');
+        $extraFeeEnabled = (bool) ($cafe['extra_fee_enabled'] ?? false);
+        $defaultLanguage = menu_default_language($languages, $defaultLanguageCode);
         $categories = $this->categories->getByCafe((int) $cafe['id'], true);
         $items = $this->items->getPublicItemsByCafe((int) $cafe['id']);
         $languageCodes = array_map(static fn (array $language): string => $language['language_code'], $languages);
+        $feeTranslations = $extraFeeEnabled
+            ? $this->groupFeeTranslations($this->feeTranslations->getByCafeId((int) $cafe['id'], $languageCodes))
+            : [];
         $categoryTranslations = $this->groupCategoryTranslations(
             $this->categoryTranslations->getByCategoryIds(array_map(static fn (array $category): int => (int) $category['id'], $categories), $languageCodes)
         );
@@ -89,10 +96,17 @@ class MenuBuilderService
                 'theme_style'  => $cafe['theme_style'],
                 'address'      => $cafe['address_text'],
                 'location_url' => $cafe['location_url'],
+                'extra_fee'    => [
+                    'enabled'      => $extraFeeEnabled,
+                    'type'         => $extraFeeEnabled ? ($cafe['extra_fee_type'] ?? null) : null,
+                    'value'        => $extraFeeEnabled && $cafe['extra_fee_value'] !== null ? (float) $cafe['extra_fee_value'] : null,
+                    'translations' => $feeTranslations,
+                ],
             ],
             'categories' => array_map(static fn (array $category): array => [
                 'id'         => (int) $category['id'],
                 'sort_order' => (int) $category['sort_order'],
+                'icon_url'   => menu_asset_url($category['icon_path']),
                 'translations' => $categoryTranslations[(int) $category['id']] ?? [],
             ], $categories),
             'items'      => array_map(static fn (array $item): array => [
@@ -114,6 +128,19 @@ class MenuBuilderService
         foreach ($rows as $row) {
             $grouped[(int) $row['category_id']][$row['language_code']] = [
                 'name' => $row['name'],
+            ];
+        }
+
+        return $grouped;
+    }
+
+    private function groupFeeTranslations(array $rows): array
+    {
+        $grouped = [];
+
+        foreach ($rows as $row) {
+            $grouped[$row['language_code']] = [
+                'label' => $row['label'],
             ];
         }
 

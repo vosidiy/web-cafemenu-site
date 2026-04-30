@@ -5,7 +5,7 @@ CafeMenu is a CodeIgniter 4 project for creating and publishing digital food men
 The app has two main parts:
 
 - A marketing / landing-page surface.
-- A tenant-based admin and public menu system where each cafe has its own `username` slug and public menu URL.
+- A tenant-based admin and public menu system where each cafe has its own `username` slug, public menu URL, and optional 6-digit pairing code for app JSON access.
 
 For a detailed implementation map, read [ARCHITECTURE.md](ARCHITECTURE.md).
 
@@ -29,11 +29,11 @@ For a detailed implementation map, read [ARCHITECTURE.md](ARCHITECTURE.md).
 
 Authentication:
 
-- `GET /admin/register`
-- `POST /admin/register`
-- `GET /admin/login`
-- `POST /admin/login`
-- `GET /admin/logout`
+- `GET /register`
+- `POST /register`
+- `GET /login`
+- `POST /login`
+- `GET /logout`
 
 Protected admin area:
 
@@ -51,6 +51,7 @@ Each cafe is published under `/{username}`.
 - `GET /{username}` -> public menu HTML shell
 - `GET /{username}/menu.json` -> public menu JSON
 - `GET /{username}/menu` -> JSON alias to the same response
+- `GET /code/{6-digit-code}` -> public menu JSON by pairing code
 - `GET /{username}/manifest.webmanifest` -> generated PWA manifest
 - `GET /{username}/sw.js` -> generated service worker
 
@@ -63,8 +64,10 @@ Important routing note:
 
 - One cafe account maps to one row in `cafes`.
 - `username` is both the login identifier and the public tenant slug.
+- `code` is an optional 6-digit pairing code for app JSON access.
 - Categories and menu items belong to a cafe through `cafe_id`.
 - Each cafe enables `1..3` menu languages through `cafe_languages`.
+- Newly registered cafes start with English (`en`) as the default menu language.
 - Public menu visibility depends on cafe status, category active state, and item availability.
 
 ## Database and Schema
@@ -82,17 +85,21 @@ Core tables:
 - `categories`
 - `menu_items`
 - `cafe_languages`
+- `cafe_fee_translations`
 - `category_translations`
 - `menu_item_translations`
 
 Important cafe fields:
 
+- `code`
 - `username`
 - `status`
-- `menu_version`
 - `menu_updated_at`
 - `logo_path`
 - `pwa_icon_path`
+- `extra_fee_enabled`
+- `extra_fee_type`
+- `extra_fee_value`
 
 Relationship behavior:
 
@@ -109,26 +116,31 @@ Primary endpoint:
 GET /{username}/menu.json
 ```
 
+Additional app-friendly endpoint:
+
+```text
+GET /code/{6-digit-code}
+```
+
 Current response shape:
 
 ```json
 {
   "meta": {
     "username": "bestcafe",
-    "version": 5,
     "updated_at": "2026-04-02T14:30:00+05:00",
-    "default_language": "ru",
+    "default_language": "en",
     "languages": [
-      {
-        "code": "ru",
-        "label": "Russian",
-        "native_label": "Русский",
-        "dir": "ltr"
-      },
       {
         "code": "en",
         "label": "English",
         "native_label": "English",
+        "dir": "ltr"
+      },
+      {
+        "code": "ru",
+        "label": "Russian",
+        "native_label": "Русский",
         "dir": "ltr"
       }
     ]
@@ -141,15 +153,24 @@ Current response shape:
     "currency": "UZS",
     "theme_style": "theme2",
     "address": "Navoi street 12",
-    "location_url": "https://maps.google.com/?q=41.55,60.63"
+    "location_url": "https://maps.google.com/?q=41.55,60.63",
+    "extra_fee": {
+      "enabled": true,
+      "type": "percent",
+      "value": 5,
+      "translations": {
+        "en": { "label": "Service fee" },
+        "ru": { "label": "Сервисный сбор" }
+      }
+    }
   },
   "categories": [
     {
       "id": 1,
       "sort_order": 1,
       "translations": {
-        "ru": { "name": "Напитки" },
-        "en": { "name": "Drinks" }
+        "en": { "name": "Drinks" },
+        "ru": { "name": "Напитки" }
       }
     }
   ],
@@ -162,8 +183,8 @@ Current response shape:
       "is_available": true,
       "sort_order": 1,
       "translations": {
-        "ru": { "name": "Капучино", "description": "Горячий кофе" },
-        "en": { "name": "Cappuccino", "description": "Hot coffee" }
+        "en": { "name": "Cappuccino", "description": "Hot coffee" },
+        "ru": { "name": "Капучино", "description": "Горячий кофе" }
       }
     }
   ]
@@ -185,7 +206,7 @@ Current JSON headers:
 
 Current public throttling:
 
-- `/{username}/menu.json` and `/{username}/menu` use `MenuJsonThrottleFilter`.
+- `/{username}/menu.json`, `/{username}/menu`, and `/code/{6-digit-code}` use `MenuJsonThrottleFilter`.
 - Throttle failures return HTTP `429` JSON.
 
 ## Images and File Storage
@@ -215,6 +236,7 @@ Current authentication behavior:
 - Login uses `password_verify()`
 - Session stores `cafe_id` and `username`
 - Protected admin routes use `AdminAuthFilter`
+- Guests are redirected to `/login` when they open protected admin routes
 
 Current password rules in code:
 
@@ -224,6 +246,10 @@ Current password rules in code:
 Current username rule:
 
 - Regex: `/^[a-z0-9_-]+$/`
+- Registration and login normalize usernames before validation/lookup:
+  - trim
+  - remove all whitespace
+  - lowercase
 
 ## Frontend Behavior
 
@@ -235,7 +261,7 @@ Current behavior:
 - Vue stores the selected menu language in localStorage per cafe
 - Vue switches category and item text client-side with fallback to the cafe default language
 - Menu items are grouped by category in the client
-- The UI includes a local client-side selection cart
+- The UI includes a local client-side selection cart with an optional per-cafe extra fee
 - The shell registers a tenant-scoped service worker
 - Fancybox is loaded from CDN for image previews
 
@@ -258,11 +284,13 @@ The main app-specific feature coverage is in:
 It currently verifies:
 
 - guest redirect on protected admin route
-- registration creates a cafe, password hash, and default language row
+- registration creates a cafe, password hash, default language row, and normalized username handling
+- registration can still succeed when pairing code generation falls back to `NULL`
 - category translation persistence for enabled cafe languages
 - duplicate language rejection in cafe settings
 - menu item translation validation
 - public JSON returns multilingual metadata and translation maps while keeping existing public filtering
+- `/code/{6-digit-code}` JSON access works for cafes that have a pairing code
 
 ## Development Notes
 

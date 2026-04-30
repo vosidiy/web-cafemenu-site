@@ -1,5 +1,6 @@
 <?php
 
+use App\Controllers\CategoryController;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\FeatureTestTrait;
 use Config\Services;
@@ -25,6 +26,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             self::$schemaReady = true;
         }
 
+        $db->table('cafe_fee_translations')->emptyTable();
         $db->table('menu_item_translations')->emptyTable();
         $db->table('category_translations')->emptyTable();
         $db->table('cafe_languages')->emptyTable();
@@ -41,7 +43,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result->assertRedirectTo('login');
     }
 
-    public function testRegistrationCreatesCafeAndDefaultLanguageAndRedirectsToDashboard(): void
+    public function testRegistrationCreatesCafeAndEnglishDefaultLanguageAndRedirectsToDashboard(): void
     {
         $result = $this->post('register', [
             'username'         => 'bestcafe',
@@ -64,7 +66,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $languageRow = Database::connect('tests')->table('cafe_languages')->where('cafe_id', $row['id'])->get()->getRowArray();
 
         $this->assertNotNull($languageRow);
-        $this->assertSame('ru', $languageRow['language_code']);
+        $this->assertSame('en', $languageRow['language_code']);
         $this->assertSame(1, (int) $languageRow['sort_order']);
     }
 
@@ -150,6 +152,9 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             'theme_style'     => 'theme2',
             'address_text'    => 'Navoi street 12',
             'location_url'    => 'https://maps.google.com/?q=41.55,60.63',
+            'extra_fee_enabled' => 1,
+            'extra_fee_type'  => 'percent',
+            'extra_fee_value' => 5,
             'menu_updated_at' => '2026-04-02 14:30:00',
             'status'          => 'active',
             'created_at'      => '2026-04-02 14:30:00',
@@ -175,12 +180,32 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             ],
         ]);
 
+        $db->table('cafe_fee_translations')->insertBatch([
+            [
+                'id'            => 1,
+                'cafe_id'       => 1,
+                'language_code' => 'ru',
+                'label'         => 'Сервисный сбор',
+                'created_at'    => '2026-04-02 14:30:00',
+                'updated_at'    => '2026-04-02 14:30:00',
+            ],
+            [
+                'id'            => 2,
+                'cafe_id'       => 1,
+                'language_code' => 'en',
+                'label'         => 'Service fee',
+                'created_at'    => '2026-04-02 14:30:00',
+                'updated_at'    => '2026-04-02 14:30:00',
+            ],
+        ]);
+
         $db->table('categories')->insertBatch([
             [
                 'id'         => 1,
                 'cafe_id'    => 1,
                 'sort_order' => 1,
                 'is_active'  => 1,
+                'icon_path'  => 'uploads/bestcafe/drinks-icon.png',
                 'created_at' => '2026-04-02 14:30:00',
                 'updated_at' => '2026-04-02 14:30:00',
             ],
@@ -306,8 +331,14 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('ru', $payload['meta']['default_language']);
         $this->assertCount(2, $payload['meta']['languages']);
         $this->assertSame('Fresh coffee every day', $payload['cafe']['slogan']);
+        $this->assertTrue($payload['cafe']['extra_fee']['enabled']);
+        $this->assertSame('percent', $payload['cafe']['extra_fee']['type']);
+        $this->assertSame(5.0, $payload['cafe']['extra_fee']['value']);
+        $this->assertSame('Сервисный сбор', $payload['cafe']['extra_fee']['translations']['ru']['label']);
+        $this->assertSame('Service fee', $payload['cafe']['extra_fee']['translations']['en']['label']);
         $this->assertCount(1, $payload['categories']);
         $this->assertArrayNotHasKey('name', $payload['categories'][0]);
+        $this->assertSame('http://example.com/uploads/bestcafe/drinks-icon.png', $payload['categories'][0]['icon_url']);
         $this->assertSame('Напитки', $payload['categories'][0]['translations']['ru']['name']);
         $this->assertSame('Drinks', $payload['categories'][0]['translations']['en']['name']);
         $this->assertCount(1, $payload['items']);
@@ -316,6 +347,37 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('Капучино', $payload['items'][0]['translations']['ru']['name']);
         $this->assertSame('Cappuccino', $payload['items'][0]['translations']['en']['name']);
         $this->assertSame('http://example.com/uploads/bestcafe/cappuccino.jpg', $payload['items'][0]['image_url']);
+    }
+
+    public function testMenuJsonFallsBackToConfiguredEnglishDefaultWhenCafeHasNoLanguageRows(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'bestcafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Best Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'active',
+            'created_at'      => '2026-04-02 14:30:00',
+            'updated_at'      => '2026-04-02 14:30:00',
+        ]);
+
+        $result = $this->get('bestcafe/menu.json');
+
+        $result->assertStatus(200);
+        $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('en', $payload['meta']['default_language']);
+        $this->assertSame('en', $payload['meta']['languages'][0]['code']);
+        $this->assertFalse($payload['cafe']['extra_fee']['enabled']);
+        $this->assertNull($payload['cafe']['extra_fee']['type']);
+        $this->assertNull($payload['cafe']['extra_fee']['value']);
+        $this->assertSame([], $payload['cafe']['extra_fee']['translations']);
     }
 
     public function testRegistrationWithDuplicateUsernameFailsWithoutCreatingSecondCafe(): void
@@ -485,12 +547,145 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $category = $db->table('categories')->where('cafe_id', 1)->get()->getRowArray();
 
         $this->assertNotNull($category);
+        $this->assertNull($category['icon_path']);
 
         $translations = $db->table('category_translations')->where('category_id', $category['id'])->orderBy('language_code', 'ASC')->get()->getResultArray();
 
         $this->assertCount(2, $translations);
         $this->assertSame('Drinks', $translations[0]['name']);
         $this->assertSame('Напитки', $translations[1]['name']);
+    }
+
+    public function testCategoryCreateCanPersistMockedIconPath(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '234567',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 1]);
+
+        $_SESSION['cafe_id'] = 1;
+        $_SESSION['username'] = 'bestcafe';
+
+        $response = $this->postCategoryThroughController([
+            'sort_order'   => 1,
+            'is_active'    => 1,
+            'translations' => [
+                'ru' => ['name' => 'Напитки'],
+            ],
+        ], null, 'uploads/bestcafe/drinks.png');
+
+        $this->assertTrue($response->isRedirect());
+
+        $category = $db->table('categories')->where('cafe_id', 1)->get()->getRowArray();
+
+        $this->assertNotNull($category);
+        $this->assertSame('uploads/bestcafe/drinks.png', $category['icon_path']);
+    }
+
+    public function testCategoryUpdatePreservesExistingIconWhenNoNewUploadProvided(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '234567',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 1]);
+        $db->table('categories')->insert([
+            'id'         => 1,
+            'cafe_id'    => 1,
+            'sort_order' => 1,
+            'is_active'  => 1,
+            'icon_path'  => 'uploads/bestcafe/original.png',
+        ]);
+        $db->table('category_translations')->insert([
+            'category_id'   => 1,
+            'language_code' => 'ru',
+            'name'          => 'Напитки',
+        ]);
+
+        $_SESSION['cafe_id'] = 1;
+        $_SESSION['username'] = 'bestcafe';
+
+        $response = $this->postCategoryThroughController([
+            'sort_order'   => 2,
+            'is_active'    => 1,
+            'translations' => [
+                'ru' => ['name' => 'Напитки'],
+            ],
+        ], 1, null);
+
+        $this->assertTrue($response->isRedirect());
+
+        $category = $db->table('categories')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('uploads/bestcafe/original.png', $category['icon_path']);
+        $this->assertSame(2, (int) $category['sort_order']);
+    }
+
+    public function testCategoryUpdateCanRemoveExistingIcon(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '234567',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 1]);
+        $db->table('categories')->insert([
+            'id'         => 1,
+            'cafe_id'    => 1,
+            'sort_order' => 1,
+            'is_active'  => 1,
+            'icon_path'  => 'uploads/bestcafe/original.png',
+        ]);
+        $db->table('category_translations')->insert([
+            'category_id'   => 1,
+            'language_code' => 'ru',
+            'name'          => 'Напитки',
+        ]);
+
+        $_SESSION['cafe_id'] = 1;
+        $_SESSION['username'] = 'bestcafe';
+
+        $response = $this->postCategoryThroughController([
+            'sort_order'   => 2,
+            'is_active'    => 1,
+            'remove_icon'  => 1,
+            'translations' => [
+                'ru' => ['name' => 'Напитки'],
+            ],
+        ], 1, null);
+
+        $this->assertTrue($response->isRedirect());
+
+        $category = $db->table('categories')->where('id', 1)->get()->getRowArray();
+
+        $this->assertNull($category['icon_path']);
     }
 
     public function testCafeSettingsRejectDuplicateLanguages(): void
@@ -508,7 +703,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             'status'        => 'active',
         ]);
 
-        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 1]);
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
 
         $result = $this->withSession([
             'cafe_id'  => 1,
@@ -522,7 +717,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             'theme_style'   => 'theme1',
             'address_text'  => '',
             'location_url'  => '',
-            'languages'     => ['ru', 'ru', ''],
+            'languages'     => ['en', 'en', ''],
         ]);
 
         $result->assertRedirect();
@@ -530,7 +725,125 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $languages = $db->table('cafe_languages')->where('cafe_id', 1)->orderBy('sort_order', 'ASC')->get()->getResultArray();
 
         $this->assertCount(1, $languages);
-        $this->assertSame('ru', $languages[0]['language_code']);
+        $this->assertSame('en', $languages[0]['language_code']);
+    }
+
+    public function testCafeSettingsCanPersistFixedExtraFeeAndExposeItInMenuJson(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '445566',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings', [
+            'person_name'       => 'Ali',
+            'phone'             => '+998901234567',
+            'cafe_name'         => 'Best Cafe',
+            'slogan'            => '',
+            'currency_name'     => 'USD',
+            'theme_style'       => 'theme1',
+            'address_text'      => '',
+            'location_url'      => '',
+            'languages'         => ['en', '', ''],
+            'extra_fee_enabled' => '1',
+            'extra_fee_type'    => 'fixed',
+            'extra_fee_value'   => '10.00',
+            'fee_translations'  => [
+                'en' => ['label' => 'Delivery fee'],
+            ],
+        ]);
+
+        $result->assertRedirectTo('admin/settings');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+        $translation = $db->table('cafe_fee_translations')->where('cafe_id', 1)->where('language_code', 'en')->get()->getRowArray();
+
+        $this->assertSame(1, (int) $cafe['extra_fee_enabled']);
+        $this->assertSame('fixed', $cafe['extra_fee_type']);
+        $this->assertSame('10.00', (string) $cafe['extra_fee_value']);
+        $this->assertNotNull($translation);
+        $this->assertSame('Delivery fee', $translation['label']);
+
+        $payload = json_decode($this->get('bestcafe/menu.json')->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertTrue($payload['cafe']['extra_fee']['enabled']);
+        $this->assertSame('fixed', $payload['cafe']['extra_fee']['type']);
+        $this->assertSame(10.0, $payload['cafe']['extra_fee']['value']);
+        $this->assertSame('Delivery fee', $payload['cafe']['extra_fee']['translations']['en']['label']);
+    }
+
+    public function testCafeSettingsCanPersistPercentExtraFeeAndExposeItInMenuJson(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '556677',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insertBatch([
+            ['cafe_id' => 1, 'language_code' => 'ru', 'sort_order' => 1],
+            ['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 2],
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings', [
+            'person_name'       => 'Ali',
+            'phone'             => '+998901234567',
+            'cafe_name'         => 'Best Cafe',
+            'slogan'            => '',
+            'currency_name'     => 'USD',
+            'theme_style'       => 'theme1',
+            'address_text'      => '',
+            'location_url'      => '',
+            'languages'         => ['ru', 'en', ''],
+            'extra_fee_enabled' => '1',
+            'extra_fee_type'    => 'percent',
+            'extra_fee_value'   => '5.00',
+            'fee_translations'  => [
+                'ru' => ['label' => 'Сервисный сбор'],
+                'en' => ['label' => 'Service fee'],
+            ],
+        ]);
+
+        $result->assertRedirectTo('admin/settings');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+        $translations = $db->table('cafe_fee_translations')->where('cafe_id', 1)->orderBy('language_code', 'ASC')->get()->getResultArray();
+
+        $this->assertSame(1, (int) $cafe['extra_fee_enabled']);
+        $this->assertSame('percent', $cafe['extra_fee_type']);
+        $this->assertSame('5.00', (string) $cafe['extra_fee_value']);
+        $this->assertCount(2, $translations);
+
+        $payload = json_decode($this->get('bestcafe/menu.json')->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertTrue($payload['cafe']['extra_fee']['enabled']);
+        $this->assertSame('percent', $payload['cafe']['extra_fee']['type']);
+        $this->assertSame(5.0, $payload['cafe']['extra_fee']['value']);
+        $this->assertSame('Сервисный сбор', $payload['cafe']['extra_fee']['translations']['ru']['label']);
+        $this->assertSame('Service fee', $payload['cafe']['extra_fee']['translations']['en']['label']);
     }
 
     public function testMenuItemCreateRejectsSecondaryDescriptionWithoutName(): void
@@ -578,6 +891,38 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertNull($db->table('menu_items')->where('cafe_id', 1)->get()->getRowArray());
     }
 
+    private function postCategoryThroughController(array $post, ?int $categoryId = null, ?string $storedIconPath = null)
+    {
+        Services::resetSingle('incomingrequest');
+        Services::resetSingle('response');
+
+        $request = service('incomingrequest', config(\Config\App::class), false);
+        $request->setMethod('post');
+        $request->setGlobal('post', $post);
+        $request->setGlobal('request', $post);
+
+        $controller = new class($storedIconPath) extends CategoryController {
+            public function __construct(
+                private readonly ?string $mockStoredIconPath,
+            ) {
+                parent::__construct();
+            }
+
+            protected function storeCategoryIcon(string $username): ?string
+            {
+                return $this->mockStoredIconPath;
+            }
+        };
+
+        $controller->initController(
+            $request,
+            service('response', null, false),
+            Services::logger(),
+        );
+
+        return $categoryId === null ? $controller->create() : $controller->update($categoryId);
+    }
+
     private function createSchema($db): void
     {
         $db->query('
@@ -596,6 +941,9 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 theme_style VARCHAR(20) NOT NULL DEFAULT "theme1",
                 address_text VARCHAR(255) DEFAULT NULL,
                 location_url VARCHAR(500) DEFAULT NULL,
+                extra_fee_enabled INTEGER NOT NULL DEFAULT 0,
+                extra_fee_type VARCHAR(20) DEFAULT NULL,
+                extra_fee_value DECIMAL(10,2) DEFAULT NULL,
                 menu_updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 status VARCHAR(20) NOT NULL DEFAULT "active",
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -609,6 +957,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 cafe_id INTEGER NOT NULL,
                 sort_order INTEGER NOT NULL DEFAULT 0,
                 is_active INTEGER NOT NULL DEFAULT 1,
+                icon_path VARCHAR(255) DEFAULT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
@@ -657,6 +1006,17 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 language_code VARCHAR(10) NOT NULL,
                 name VARCHAR(150) NOT NULL,
                 description TEXT DEFAULT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $db->query('
+            CREATE TABLE IF NOT EXISTS cafe_fee_translations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                cafe_id INTEGER NOT NULL,
+                language_code VARCHAR(10) NOT NULL,
+                label VARCHAR(100) NOT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )

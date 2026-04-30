@@ -120,6 +120,23 @@ body {
   cursor: pointer;
 }
 
+.cat-btn__content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-btn__icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.cat-btn__label {
+  white-space: nowrap;
+}
+
 .cat-btn[aria-pressed="true"] {
   background: var(--ink);
   color: #fff;

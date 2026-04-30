@@ -4,17 +4,20 @@ namespace App\Controllers;
 
 use App\Models\CafeModel;
 use App\Services\CafeLanguageService;
+use App\Services\LanguageCatalogService;
 use Config\Database;
 
 class AuthController extends BaseController
 {
     private CafeModel $cafes;
     private CafeLanguageService $cafeLanguages;
+    private LanguageCatalogService $languageCatalog;
 
     public function __construct()
     {
         $this->cafes = new CafeModel();
         $this->cafeLanguages = new CafeLanguageService();
+        $this->languageCatalog = new LanguageCatalogService();
     }
 
     public function register()
@@ -101,7 +104,7 @@ class AuthController extends BaseController
 
         $cafeId = (int) $this->cafes->getInsertID();
 
-        if (! $this->cafeLanguages->syncForCafe($cafeId, ['ru'])) {
+        if (! $this->cafeLanguages->syncForCafe($cafeId, [$this->languageCatalog->getDefaultCafeLanguageCode()])) {
             $db->transRollback();
 
             return redirect()->back()->withInput()->with('errors', $this->cafeLanguages->getErrors());

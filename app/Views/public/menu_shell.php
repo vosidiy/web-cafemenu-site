@@ -57,7 +57,9 @@
             :aria-pressed="selectedCategoryId === 'all'"
             @click="selectCategory('all')"
         >
-            Все блюда
+            <span class="cat-btn__content">
+                <span class="cat-btn__label">Все блюда</span>
+            </span>
         </button>
         <button
             v-for="category in categories"
@@ -67,7 +69,17 @@
             :aria-pressed="selectedCategoryId === category.id"
             @click="selectCategory(category.id)"
         >
-            {{ categoryName(category) }}
+            <span class="cat-btn__content">
+                <img
+                    v-if="categoryIcon(category)"
+                    :src="categoryIcon(category)"
+                    :alt="categoryName(category)"
+                    class="cat-btn__icon"
+                    loading="lazy"
+                    decoding="async"
+                >
+                <span class="cat-btn__label">{{ categoryName(category) }}</span>
+            </span>
         </button>
     </nav>
 
@@ -285,8 +297,22 @@
 
             <footer class="cart-panel__foot">
                 <div class="cart-total">
+                    <template v-if="showCartFeeBreakdown">
+                        <span>Подытог</span>
+                        <span>{{ formatPrice(cartSubtotal) }} {{ currencyLabel }}</span>
+                    </template>
+                    <template v-else>
+                        <span>Итого</span>
+                        <span id="cart-total">{{ formatPrice(cartGrandTotal) }} {{ currencyLabel }}</span>
+                    </template>
+                </div>
+                <div v-if="showCartFeeBreakdown" class="cart-total">
+                    <span>{{ cartFeeLabel }}</span>
+                    <span>{{ formatPrice(cartFeeAmount) }} {{ currencyLabel }}</span>
+                </div>
+                <div v-if="showCartFeeBreakdown" class="cart-total">
                     <span>Итого</span>
-                    <span id="cart-total">{{ formatPrice(cartTotal) }} {{ currencyLabel }}</span>
+                    <span id="cart-total">{{ formatPrice(cartGrandTotal) }} {{ currencyLabel }}</span>
                 </div>
             </footer>
         </aside>

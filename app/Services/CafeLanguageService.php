@@ -28,11 +28,12 @@ class CafeLanguageService
     public function getByCafe(int $cafeId): array
     {
         $rows = $this->cafeLanguages->getByCafe($cafeId);
+        $defaultLanguageCode = $this->languageCatalog->getDefaultCafeLanguageCode();
 
         if ($rows === []) {
             return [$this->decorateLanguageRow([
                 'cafe_id'       => $cafeId,
-                'language_code' => 'ru',
+                'language_code' => $defaultLanguageCode,
                 'sort_order'    => 1,
             ])];
         }
@@ -52,7 +53,7 @@ class CafeLanguageService
     {
         $languages = $this->getByCafe($cafeId);
 
-        return menu_default_language($languages, 'ru');
+        return menu_default_language($languages, $this->languageCatalog->getDefaultCafeLanguageCode());
     }
 
     public function syncForCafe(int $cafeId, array $selectedLanguages): bool
