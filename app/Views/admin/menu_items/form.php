@@ -74,7 +74,7 @@
             </div>
             </div>
 
-            <div class="row mb-6">
+            <div class="row mb-5">
                 <div class="md:col-3 mb-4">
                     <label class="form-label">Порядок сортировки</label>
                     <input type="number" name="sort_order" class="form-control" value="<?= esc((string) menu_old('sort_order', $item['sort_order'] ?? 0)) ?>" required>
@@ -91,5 +91,6 @@
         </form>
     </div>
 </div>
+<br><br>
 
 <?= $this->endSection() ?>
