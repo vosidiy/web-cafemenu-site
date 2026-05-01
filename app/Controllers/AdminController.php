@@ -23,7 +23,7 @@ class AdminController extends BaseController
         $items = $this->items->getByCafe($cafeId);
 
         return view('admin/dashboard', [
-            'title'          => 'Dashboard',
+            'title'          => 'dashboard_page_title',
             'cafe'           => $cafe,
             'categories'     => $categories,
             'items'          => $items,

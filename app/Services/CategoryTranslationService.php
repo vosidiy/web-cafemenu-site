@@ -10,6 +10,7 @@ class CategoryTranslationService
 
     public function __construct(
         private readonly CategoryTranslationModel $translations = new CategoryTranslationModel(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -33,7 +34,7 @@ class CategoryTranslationService
             $name = trim((string) ($payload[$code]['name'] ?? ''));
 
             if ($code === $defaultLanguage && $name === '') {
-                $errors['translations.' . $code . '.name'] = 'Название категории на языке по умолчанию обязательно.';
+                $errors['translations.' . $code . '.name'] = $this->adminTexts->translate('default_category_name_required');
                 continue;
             }
 

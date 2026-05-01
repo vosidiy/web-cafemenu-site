@@ -11,6 +11,11 @@ class FileUploadService
 {
     private const MAX_IMAGE_DIMENSION = 1200;
 
+    public function __construct(
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
+    ) {
+    }
+
     public function storeUploadedImage(?File $file, string $username): ?string
     {
         if ($file === null || ! $file->isValid() || $file->getError() === UPLOAD_ERR_NO_FILE) {
@@ -20,13 +25,13 @@ class FileUploadService
         $mimeType = $file->getMimeType();
 
         if (! in_array($mimeType, ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'], true)) {
-            throw new RuntimeException('Please upload a valid image file.');
+            throw new RuntimeException($this->adminTexts->translate('upload_valid_image_file'));
         }
 
         $directory = FCPATH . 'uploads/' . $username;
 
         if (! is_dir($directory) && ! mkdir($directory, 0775, true) && ! is_dir($directory)) {
-            throw new RuntimeException('Unable to create upload directory.');
+            throw new RuntimeException($this->adminTexts->translate('upload_create_dir_failed'));
         }
 
         $newName = $file->getRandomName();
@@ -45,7 +50,7 @@ class FileUploadService
         $size = @getimagesize($path);
 
         if ($size === false) {
-            throw new RuntimeException('Unable to read uploaded image.');
+            throw new RuntimeException($this->adminTexts->translate('upload_read_image_failed'));
         }
 
         [$width, $height] = $size;
@@ -66,7 +71,7 @@ class FileUploadService
                 ->resize($targetWidth, $targetHeight, true, 'auto')
                 ->save($path, 90);
         } catch (Throwable $exception) {
-            throw new RuntimeException('Unable to resize uploaded image.', 0, $exception);
+            throw new RuntimeException($this->adminTexts->translate('upload_resize_failed'), 0, $exception);
         }
     }
 }

@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Models\CategoryModel;
 use App\Models\CategoryTranslationModel;
+use App\Services\AdminUiTextCatalogService;
 use App\Services\CafeLanguageService;
 use App\Services\CafeService;
 use App\Services\CategoryService;
@@ -20,6 +21,7 @@ class CategoryController extends BaseController
         private readonly CafeLanguageService $cafeLanguages = new CafeLanguageService(),
         private readonly CategoryService $categoryService = new CategoryService(),
         private readonly FileUploadService $uploads = new FileUploadService(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -73,7 +75,7 @@ class CategoryController extends BaseController
         unset($category);
 
         return view('admin/categories/index', [
-            'title'      => 'Категории',
+            'title'      => 'categories_page_title',
             'cafe'       => $cafe,
             'categories' => $categories,
         ]);
@@ -82,7 +84,7 @@ class CategoryController extends BaseController
     public function new(): string
     {
         return view('admin/categories/form', [
-            'title'        => 'Новая категория',
+            'title'        => 'new_category',
             'category'     => null,
             'translations' => [],
             'languages'    => $this->cafeLanguages->getByCafe((int) $this->cafeService->getCurrentCafeId()),
@@ -100,7 +102,7 @@ class CategoryController extends BaseController
         $category = $this->findOwnedCategoryOrFail($id);
 
         return view('admin/categories/form', [
-            'title'        => 'Редактирование категории',
+            'title'        => 'edit_category',
             'category'     => $category,
             'translations' => $this->categoryTranslations->getByCategoryId($id),
             'languages'    => $this->cafeLanguages->getByCafe((int) $category['cafe_id']),
@@ -119,7 +121,7 @@ class CategoryController extends BaseController
         $this->categories->delete($id);
         $this->cafeService->touchMenuUpdatedAt((int) $category['cafe_id']);
 
-        return redirect()->to(site_url('admin/categories'))->with('success', 'Категория удалена.');
+        return redirect()->to(site_url('admin/categories'))->with('success', $this->adminTexts->translate('category_deleted'));
     }
 
     private function persist(?int $id = null)
@@ -163,7 +165,7 @@ class CategoryController extends BaseController
         $this->cafeService->touchMenuUpdatedAt($cafeId);
 
         return redirect()->to(site_url('admin/categories'))
-            ->with('success', $category === null ? 'Категория создана.' : 'Категория обновлена.');
+            ->with('success', $this->adminTexts->translate($category === null ? 'category_created' : 'category_updated'));
     }
 
     private function collectPayload(int $cafeId): array
@@ -187,7 +189,7 @@ class CategoryController extends BaseController
         $mimeType = $file->getMimeType();
 
         if (! in_array($mimeType, ['image/png', 'image/svg+xml'], true)) {
-            throw new RuntimeException('Please upload a valid PNG or SVG icon.');
+            throw new RuntimeException($this->adminTexts->translate('upload_valid_png_svg_icon'));
         }
 
         return $this->uploads->storeUploadedImage($file, $username);

@@ -12,6 +12,7 @@ class CafeLanguageService
     public function __construct(
         private readonly CafeLanguageModel $cafeLanguages = new CafeLanguageModel(),
         private readonly LanguageCatalogService $languageCatalog = new LanguageCatalogService(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -85,7 +86,7 @@ class CafeLanguageService
         }
 
         if ($db->error()['code'] !== 0) {
-            $this->errors = ['languages' => 'Не удалось сохранить языки кафе.'];
+            $this->errors = ['languages' => $this->adminTexts->translate('failed_save_cafe_languages')];
 
             return false;
         }
@@ -117,20 +118,20 @@ class CafeLanguageService
         $errors = [];
 
         if ($codes === []) {
-            $errors['languages.0'] = 'Язык по умолчанию обязателен.';
+            $errors['languages.0'] = $this->adminTexts->translate('default_language_required');
         }
 
         if (count($codes) > 3) {
-            $errors['languages'] = 'Можно выбрать максимум 3 языка.';
+            $errors['languages'] = $this->adminTexts->translate('max_three_languages');
         }
 
         if (count(array_unique($codes)) !== count($codes)) {
-            $errors['languages_unique'] = 'Языки не должны повторяться.';
+            $errors['languages_unique'] = $this->adminTexts->translate('languages_must_be_unique');
         }
 
         foreach ($codes as $index => $code) {
             if (! $this->languageCatalog->isSupported($code)) {
-                $errors['languages.' . $index] = 'Выбран неподдерживаемый язык.';
+                $errors['languages.' . $index] = $this->adminTexts->translate('unsupported_language');
             }
         }
 

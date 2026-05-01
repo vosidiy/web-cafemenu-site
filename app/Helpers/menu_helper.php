@@ -1,5 +1,7 @@
 <?php
 
+use App\Services\AdminLanguageService;
+use App\Services\AdminUiTextCatalogService;
 use App\Services\LanguageCatalogService;
 
 if (! function_exists('menu_asset_url')) {
@@ -102,5 +104,26 @@ if (! function_exists('menu_translation_value')) {
         }
 
         return null;
+    }
+}
+
+if (! function_exists('admin_ui')) {
+    function admin_ui(string $key, array $replacements = []): string
+    {
+        return (new AdminUiTextCatalogService())->translate($key, null, $replacements);
+    }
+}
+
+if (! function_exists('admin_ui_current_language')) {
+    function admin_ui_current_language(): array
+    {
+        return (new AdminLanguageService())->resolveCurrentLanguage();
+    }
+}
+
+if (! function_exists('admin_ui_supported_languages')) {
+    function admin_ui_supported_languages(): array
+    {
+        return (new AdminLanguageService())->getSupportedLanguages();
     }
 }

@@ -78,7 +78,7 @@ class PublicUiTextCatalogService
             'all_items' => 'Все блюда',
             'loading_menu' => 'Загрузка меню...',
             'menu_items_empty' => 'Пункты меню отсутствуют.',
-            'select_item' => 'Выбирать',
+            'select_item' => 'Выбрать',
             'item_unavailable' => 'Недоступно',
             'category_items_empty' => 'В этой категории блюда отсутствуют.',
             'selected_button' => 'Выбрано',

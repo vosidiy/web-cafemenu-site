@@ -16,6 +16,7 @@ $routes->post('register', 'AuthController::store');
 $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::authenticate');
 $routes->get('logout', 'AuthController::logout');
+$routes->post('admin/language', 'AdminLanguageController::update');
 
 $routes->group('admin', static function ($routes) {
     $routes->get('/', 'AdminController::index', ['filter' => 'adminauth']);

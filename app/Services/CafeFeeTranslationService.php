@@ -10,6 +10,7 @@ class CafeFeeTranslationService
 
     public function __construct(
         private readonly CafeFeeTranslationModel $translations = new CafeFeeTranslationModel(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -38,7 +39,7 @@ class CafeFeeTranslationService
             $label = trim((string) ($payload[$code]['label'] ?? ''));
 
             if ($requireDefaultLabel && $code === $defaultLanguage && $label === '') {
-                $errors['fee_translations.' . $code . '.label'] = 'Название доп. сбора на языке по умолчанию обязательно.';
+                $errors['fee_translations.' . $code . '.label'] = $this->adminTexts->translate('default_fee_label_required');
                 continue;
             }
 

@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Services\AdminLanguageService;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -26,6 +27,7 @@ abstract class BaseController extends Controller
      */
 
     protected $session;
+    protected array $adminLanguage = [];
 
     /**
      * @return void
@@ -41,5 +43,27 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         $this->session = service('session');
+        $this->bootAdminLanguageContext($request);
+    }
+
+    private function bootAdminLanguageContext(RequestInterface $request): void
+    {
+        $adminLanguageService = new AdminLanguageService();
+        $this->adminLanguage = $adminLanguageService->resolveCurrentLanguage($request, $this->session);
+
+        $uri = $request->getUri();
+        $redirectTo = trim($uri->getPath(), '/');
+        $query = $uri->getQuery();
+
+        if ($query !== '') {
+            $redirectTo .= '?' . $query;
+        }
+
+        service('renderer')->setData([
+            'adminLanguage' => $this->adminLanguage,
+            'adminLanguages' => $adminLanguageService->getSupportedLanguages(),
+            'adminLanguageSwitchAction' => site_url('admin/language'),
+            'adminLanguageRedirectTo' => $redirectTo,
+        ], 'raw');
     }
 }

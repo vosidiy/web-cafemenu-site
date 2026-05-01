@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?= esc($adminLanguage['code'] ?? 'en') ?>" dir="<?= esc($adminLanguage['dir'] ?? 'ltr') ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= esc($title ?? 'Админ-панель Cafe Menu') ?></title>
+    <title><?= esc(admin_ui($title ?? 'login_page_title')) ?></title>
     <link href="<?= base_url('final.min.css') ?>" rel="stylesheet">
 
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -19,14 +19,15 @@
             <!-- brand -->
             <a href="<?= base_url() ?>" class="hover:opacity-80 d-flex text-decoration-none align-items-center m-0">
                 <div style="font-size:20px;" class="text-orange-800 font-semibold ml-1">
-                     📙 CafeMenu 
+                     📙 CafeMenu
                 </div>
             </a>
             <!-- brand .//end -->
         </div>
-        <div class="">
-            <a href="https://t.me/vosidiy?text=Salom alaykum, CafeMenu masalasida yordam kerak" target="_blank" class="btn btn-default"> 
-                Support ↗ 
+        <div class="d-flex align-items-center gap-2">
+            <?= view('admin/partials/language_switcher') ?>
+            <a href="https://t.me/vosidiy?text=<?= rawurlencode(admin_ui('support_prefill')) ?>" target="_blank" class="btn btn-default">
+                <span class="d-none md:d-inline-block"><?= esc(admin_ui('support')) ?></span> 💬 ↗
             </a>
         </div>
     </div>  <!-- container .// -->
@@ -36,7 +37,7 @@
     
         <article class="card mt-10 md:mt-20 shadow">
             <div class="card-body md:p-8">
-                <h1 class="text-xl mb-5">Вход в админ-панель</h1>
+                <h1 class="text-xl mb-5"><?= esc(admin_ui('login_heading')) ?></h1>
 
 
                 <?php if (session()->getFlashdata('error')): ?>
@@ -46,15 +47,15 @@
                 <form method="post" action="<?= site_url('login') ?>">
                     <?= csrf_field() ?>
                     <div class="mb-4">
-                        <label class="form-label">Имя пользователя</label>
-                        <input type="text" name="username" placeholder="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
+                        <label class="form-label"><?= esc(admin_ui('username_label')) ?></label>
+                        <input type="text" name="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
                     </div>
                     <div class="mb-4">
-                        <label class="form-label">Пароль</label>
+                        <label class="form-label"><?= esc(admin_ui('password_label')) ?></label>
                         <input type="password" name="password" class="form-control" required>
                     </div>
                     <div class="mt-6">
-                        <button type="submit" class="btn w-full btn-primary">Войти</button>
+                        <button type="submit" class="btn w-full btn-primary"><?= esc(admin_ui('sign_in')) ?></button>
                     </div>
                 </form>
             </div>
@@ -62,7 +63,7 @@
 
         <br>
 
-        <p hidden class="text-center my-5"> <a  href="<?= site_url('register') ?>">Создать аккаунт</a></p>
+        <p class="text-center my-5"><a href="<?= site_url('register') ?>"><?= esc(admin_ui('create_account')) ?></a></p>
 </div>
 
 

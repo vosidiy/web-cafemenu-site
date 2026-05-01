@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Models\CategoryModel;
 use App\Models\MenuItemModel;
 use App\Models\MenuItemTranslationModel;
+use App\Services\AdminUiTextCatalogService;
 use App\Services\CafeLanguageService;
 use App\Services\CafeService;
 use App\Services\FileUploadService;
@@ -22,6 +23,7 @@ class MenuItemController extends BaseController
         private readonly CafeLanguageService $cafeLanguages = new CafeLanguageService(),
         private readonly FileUploadService $uploads = new FileUploadService(),
         private readonly MenuItemService $itemService = new MenuItemService(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -87,7 +89,7 @@ class MenuItemController extends BaseController
         unset($item);
 
         return view('admin/menu_items/index', [
-            'title' => 'Блюда меню',
+            'title' => 'menu_items_page_title',
             'items' => $items,
         ]);
     }
@@ -98,7 +100,7 @@ class MenuItemController extends BaseController
         $cafe = $this->cafeService->getCurrentCafe();
 
         return view('admin/menu_items/form', [
-            'title'        => 'Новое блюдо',
+            'title'        => 'new_menu_item',
             'item'         => null,
             'translations' => [],
             'action'       => site_url('admin/menu-items'),
@@ -124,7 +126,7 @@ class MenuItemController extends BaseController
         }
 
         return view('admin/menu_items/form', [
-            'title'        => 'Редактирование блюда',
+            'title'        => 'edit_menu_item',
             'item'         => $item,
             'translations' => $this->itemTranslations->getByMenuItemId($id),
             'action'       => site_url('admin/menu-items/' . $id),
@@ -151,7 +153,7 @@ class MenuItemController extends BaseController
         $this->items->delete($id);
         $this->cafeService->touchMenuUpdatedAt($cafeId);
 
-        return redirect()->to(site_url('admin'))->with('success', 'Блюдо удалено.');
+        return redirect()->to(site_url('admin'))->with('success', $this->adminTexts->translate('item_deleted'));
     }
 
     private function persist(?int $id = null)
@@ -163,7 +165,7 @@ class MenuItemController extends BaseController
         $categoryId = $categoryId !== '' ? (int) $categoryId : null;
 
         if ($categoryId !== null && $this->categories->findByCafe($cafeId, $categoryId) === null) {
-            return redirect()->back()->withInput()->with('error', 'Выбранная категория не принадлежит вашему кафе.');
+            return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('selected_category_not_owned'));
         }
 
         $data = [
@@ -209,7 +211,7 @@ class MenuItemController extends BaseController
         $this->cafeService->touchMenuUpdatedAt($cafeId);
 
         return redirect()->to(site_url('admin'))
-            ->with('success', $id === null ? 'Блюдо создано.' : 'Блюдо обновлено.');
+            ->with('success', $this->adminTexts->translate($id === null ? 'item_created' : 'item_updated'));
     }
 
     private function collectTranslations(): array

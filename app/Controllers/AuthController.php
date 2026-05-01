@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\CafeModel;
+use App\Services\AdminUiTextCatalogService;
 use App\Services\CafeLanguageService;
 use App\Services\LanguageCatalogService;
 use Config\Database;
@@ -12,12 +13,14 @@ class AuthController extends BaseController
     private CafeModel $cafes;
     private CafeLanguageService $cafeLanguages;
     private LanguageCatalogService $languageCatalog;
+    private AdminUiTextCatalogService $adminTexts;
 
     public function __construct()
     {
         $this->cafes = new CafeModel();
         $this->cafeLanguages = new CafeLanguageService();
         $this->languageCatalog = new LanguageCatalogService();
+        $this->adminTexts = new AdminUiTextCatalogService();
     }
 
     public function register()
@@ -27,7 +30,7 @@ class AuthController extends BaseController
         }
 
         return view('admin/auth/register', [
-            'title' => 'Регистрация',
+            'title' => 'register_page_title',
         ]);
     }
 
@@ -66,7 +69,7 @@ class AuthController extends BaseController
         }
 
         if ($password !== $confirmPassword) {
-            return redirect()->back()->withInput()->with('error', 'Подтверждение пароля не совпадает.');
+            return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('password_confirmation_mismatch'));
         }
 
         $db = Database::connect();
@@ -118,7 +121,7 @@ class AuthController extends BaseController
             'username' => $data['username'],
         ]);
 
-        return redirect()->to(site_url('admin'))->with('success', 'Аккаунт успешно создан.');
+        return redirect()->to(site_url('admin'))->with('success', $this->adminTexts->translate('account_created_success'));
     }
 
     public function login()
@@ -128,7 +131,7 @@ class AuthController extends BaseController
         }
 
         return view('admin/auth/login', [
-            'title' => 'Вход',
+            'title' => 'login_page_title',
         ]);
     }
 
@@ -140,7 +143,7 @@ class AuthController extends BaseController
         $cafe = $this->cafes->where('username', $username)->first();
 
         if ($cafe === null || $cafe['status'] !== 'active' || ! password_verify($password, $cafe['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Неверные учетные данные.');
+            return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('invalid_credentials'));
         }
 
         $this->session->regenerate(true);
@@ -156,7 +159,7 @@ class AuthController extends BaseController
     {
         $this->session->destroy();
 
-        return redirect()->to(site_url('login'))->with('success', 'Вы успешно вышли из системы.');
+        return redirect()->to(site_url('login'))->with('success', $this->adminTexts->translate('logged_out_success'));
     }
 
     protected function generateCafeCode(): string

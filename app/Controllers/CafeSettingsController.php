@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Models\CafeModel;
+use App\Services\AdminUiTextCatalogService;
 use App\Services\CafeFeeTranslationService;
 use App\Services\CafeLanguageService;
 use App\Services\CafeService;
@@ -18,6 +19,7 @@ class CafeSettingsController extends BaseController
         private readonly CafeModel $cafes = new CafeModel(),
         private readonly CafeLanguageService $cafeLanguages = new CafeLanguageService(),
         private readonly CafeFeeTranslationService $feeTranslations = new CafeFeeTranslationService(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -26,7 +28,7 @@ class CafeSettingsController extends BaseController
         $cafeId = (int) $this->cafeService->getCurrentCafeId();
 
         return view('admin/settings/edit', [
-            'title'              => 'Настройки кафе',
+            'title'              => 'settings_page_title',
             'cafe'               => $this->cafeService->getCurrentCafe(),
             'supportedLanguages' => $this->cafeLanguages->getSupportedLanguages(),
             'cafeLanguages'      => $this->cafeLanguages->getByCafe($cafeId),
@@ -111,7 +113,7 @@ class CafeSettingsController extends BaseController
 
         $this->cafeService->touchMenuUpdatedAt((int) $cafe['id']);
 
-        return redirect()->to(site_url('admin/settings'))->with('success', 'Настройки кафе обновлены.');
+        return redirect()->to(site_url('admin/settings'))->with('success', $this->adminTexts->translate('cafe_settings_updated'));
     }
 
     public function updatePassword()
@@ -136,11 +138,11 @@ class CafeSettingsController extends BaseController
         $newPassword = (string) $this->request->getPost('new_password');
 
         if (! password_verify($oldPassword, $cafe['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Текущий пароль указан неверно.');
+            return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('current_password_incorrect'));
         }
 
         if (password_verify($newPassword, $cafe['password_hash'])) {
-            return redirect()->back()->withInput()->with('error', 'Новый пароль должен отличаться от текущего.');
+            return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('new_password_must_differ'));
         }
 
         $this->cafes->update((int) $cafe['id'], [
@@ -151,7 +153,7 @@ class CafeSettingsController extends BaseController
             return redirect()->back()->withInput()->with('errors', $this->cafes->errors());
         }
 
-        return redirect()->to(site_url('admin/settings'))->with('success', 'Пароль успешно обновлен.');
+        return redirect()->to(site_url('admin/settings'))->with('success', $this->adminTexts->translate('password_updated_success'));
     }
 
     private function validateExtraFee(bool $isEnabled, string $type, string $value): array
@@ -163,11 +165,11 @@ class CafeSettingsController extends BaseController
         $errors = [];
 
         if (! in_array($type, ['fixed', 'percent'], true)) {
-            $errors['extra_fee_type'] = 'Выберите тип доп. сбора.';
+            $errors['extra_fee_type'] = $this->adminTexts->translate('select_extra_fee_type');
         }
 
         if ($value === '' || ! is_numeric($value) || (float) $value <= 0) {
-            $errors['extra_fee_value'] = 'Укажите значение доп. сбора больше 0.';
+            $errors['extra_fee_value'] = $this->adminTexts->translate('extra_fee_value_gt_zero');
         }
 
         return $errors;

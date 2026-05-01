@@ -157,6 +157,7 @@ Controllers are thin request handlers.
 
 - `Home` renders landing pages and recent active cafes.
 - `AuthController` handles registration, login, logout, username normalization, and best-effort pairing-code generation.
+- `AdminLanguageController` persists the selected admin UI language and redirects back to the current page.
 - `AdminController` loads dashboard data and public URLs for the current cafe.
 - `CafeSettingsController` updates cafe profile fields, logo, PWA icon, and password.
 - `CategoryController` manages category CRUD for the current cafe.
@@ -178,6 +179,16 @@ Controllers are thin request handlers.
   - Resolves enabled cafe languages and default language.
   - Fetches active categories and public menu items.
   - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale` and top-level `ui_translations`.
+
+- `AdminLanguageService`
+  - Resolves the admin UI language from session, cookie, browser `Accept-Language`, then English fallback.
+  - Persists explicit admin language changes to both session and cookie.
+  - Sanitizes post-switch redirect targets so language changes return to the same internal admin/auth page safely.
+
+- `AdminUiTextCatalogService`
+  - Exposes the server-rendered admin/auth translation catalog for every supported language.
+  - Falls back to English when a key is missing from the selected language override.
+  - Provides translated flash/error text for controllers and services in addition to view labels.
 
 - `CafeLanguageService`
   - Exposes the fixed language catalog.
@@ -245,6 +256,15 @@ Controllers are thin request handlers.
 
 - `menu_translation_value(array $translations, string $languageCode, string $defaultLanguage, string $field): ?string`
   - Resolves selected-locale text with fallback to the default language.
+
+- `admin_ui(string $key, array $replacements = []): string`
+  - Resolves an admin/auth UI translation using the current persisted admin language with English fallback.
+
+- `admin_ui_current_language(): array`
+  - Returns the current admin language metadata shared with admin/auth layouts.
+
+- `admin_ui_supported_languages(): array`
+  - Returns the full supported language catalog for the admin language switcher.
 
 ## Database Architecture
 

@@ -10,6 +10,7 @@ class MenuItemTranslationService
 
     public function __construct(
         private readonly MenuItemTranslationModel $translations = new MenuItemTranslationModel(),
+        private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
     ) {
     }
 
@@ -34,12 +35,12 @@ class MenuItemTranslationService
             $description = trim((string) ($payload[$code]['description'] ?? ''));
 
             if ($code === $defaultLanguage && $name === '') {
-                $errors['translations.' . $code . '.name'] = 'Название блюда на языке по умолчанию обязательно.';
+                $errors['translations.' . $code . '.name'] = $this->adminTexts->translate('default_menu_item_name_required');
                 continue;
             }
 
             if ($code !== $defaultLanguage && $name === '' && $description !== '') {
-                $errors['translations.' . $code . '.name'] = 'Укажите название блюда для заполненного перевода.';
+                $errors['translations.' . $code . '.name'] = $this->adminTexts->translate('fill_menu_item_name_for_translated_description');
                 continue;
             }
 

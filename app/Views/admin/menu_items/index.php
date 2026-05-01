@@ -3,9 +3,9 @@
 <?= $this->section('content') ?>
 
 <header class="md:d-flex align-items-center justify-content-between py-4">
-    <h2 class="text-3xl"> Поиск блюд </h2>
+    <h2 class="text-3xl"><?= esc(admin_ui('menu_items_page_title')) ?></h2>
     <div class="mt-3 md:mt-0">
-       <a class="btn btn-primary" href="<?= site_url('admin/menu-items/new') ?>">Новое блюдо</a>
+       <a class="btn btn-primary" href="<?= site_url('admin/menu-items/new') ?>"><?= esc(admin_ui('new_menu_item')) ?></a>
     </div>
 </header>
 
@@ -17,16 +17,16 @@
                     autofocus
                     type="search"
                     class="form-control"
-                    placeholder="Поиск"
+                    placeholder="<?= esc(admin_ui('search_placeholder')) ?>"
                     data-menu-search-input
                 >
                 <button
                     type="button"
                     class="btn btn-default d-none"
                     data-menu-search-reset
-                    aria-label="Очистить поиск"
+                    aria-label="<?= esc(admin_ui('clear_search_aria')) ?>"
                 >
-                    Сбросить
+                    <?= esc(admin_ui('clear_search')) ?>
                 </button>
             </div>
         </div>
@@ -35,32 +35,32 @@
             <table class="table table-hover">
                 <thead>
                 <tr>
-                    <th>Сортир.</th>
-                    <th>Фото</th>
-                    <th>Название</th>
-                    <th>📁 Категория</th>
-                    <th>Цена</th>
-                    <th>Статус</th>
-                    <th class="text-right">Действия</th>
+                    <th><?= esc(admin_ui('sort_short')) ?></th>
+                    <th><?= esc(admin_ui('photo')) ?></th>
+                    <th><?= esc(admin_ui('name')) ?></th>
+                    <th>📁 <?= esc(admin_ui('category_label')) ?></th>
+                    <th><?= esc(admin_ui('price_label')) ?></th>
+                    <th><?= esc(admin_ui('status')) ?></th>
+                    <th class="text-right"><?= esc(admin_ui('actions')) ?></th>
                 </tr>
                 </thead>
                 <tbody data-menu-search-body>
                 <?php if ($items === []): ?>
-                    <tr><td colspan="7" class="text-center py-4 text-muted">Пункты меню пока не созданы.</td></tr>
+                    <tr><td colspan="7" class="text-center py-4 text-muted"><?= esc(admin_ui('menu_items_empty')) ?></td></tr>
                 <?php endif; ?>
                 <?php foreach ($items as $item): ?>
                     <tr
                         valign="top"
                         data-menu-search-row
                         data-name="<?= esc(mb_strtolower((string) ($item['search_name'] ?? $item['name'] ?? ''), 'UTF-8')) ?>"
-                        data-category="<?= esc(mb_strtolower((string) ($item['category_name'] ?? 'Без категории'), 'UTF-8')) ?>"
+                        data-category="<?= esc(mb_strtolower((string) ($item['category_name'] ?? admin_ui('uncategorized')), 'UTF-8')) ?>"
                     >
                         <td width="2%"> #<?= esc($item['sort_order']) ?> </td>
                         <td width="10%">
                             <?php if (! empty($item['image_path'])): ?>
                                 <img class="w-30 rounded" src="<?= esc(menu_asset_url($item['image_path'])) ?>" style="max-height: 80px;">
                             <?php else: ?>
-                                <img class="w-30 rounded" src="/nophoto.png" title="No photo"  style="max-height: 80px;">
+                                <img class="w-30 rounded" src="/nophoto.png" title="<?= esc(admin_ui('no_image')) ?>"  style="max-height: 80px;">
                             <?php endif; ?>
                         </td>
                         <td width="30%">
@@ -71,25 +71,25 @@
                                 </div>
                             <?php endforeach; ?>
                         </td>
-                        <td><?= esc($item['category_name'] ?? 'Без категории') ?></td>
+                        <td><?= esc($item['category_name'] ?? admin_ui('uncategorized')) ?></td>
                         <td><?= esc($item['price']) ?></td>
                         <td>
                             <span class="badge <?= (int) $item['is_available'] === 1 ? 'bg-green-200' : 'bg-red-200' ?>">
-                                <?= (int) $item['is_available'] === 1 ? 'Доступно' : 'Скрыто' ?>
+                                <?= (int) $item['is_available'] === 1 ? esc(admin_ui('available')) : esc(admin_ui('hidden')) ?>
                             </span>
                         </td>
                         <td class="text-right">
-                            <a class="btn btn-sm btn-outline" href="<?= site_url('admin/menu-items/' . $item['id'] . '/edit') ?>">Изменить</a>
+                            <a class="btn btn-sm btn-outline" href="<?= site_url('admin/menu-items/' . $item['id'] . '/edit') ?>"><?= esc(admin_ui('edit')) ?></a>
                             <form method="post" action="<?= site_url('admin/menu-items/' . $item['id'] . '/delete') ?>" class="d-inline">
                                 <?= csrf_field() ?>
-                                <button type="submit" class="btn btn-sm btn-red-subtle" onclick="return confirm('Удалить этот пункт меню?')">Удалить</button>
+                                <button type="submit" class="btn btn-sm btn-red-subtle" onclick="return confirm(<?= esc(json_encode(admin_ui('delete_menu_item_confirm'), JSON_UNESCAPED_UNICODE), 'attr') ?>)"><?= esc(admin_ui('delete')) ?></button>
                             </form>
                         </td>
                     </tr>
                 <?php endforeach; ?>
                 <?php if ($items !== []): ?>
                     <tr class="d-none" data-menu-search-empty>
-                        <td colspan="7" class="text-center py-4 text-muted">Ничего не найдено.</td>
+                        <td colspan="7" class="text-center py-4 text-muted"><?= esc(admin_ui('nothing_found')) ?></td>
                     </tr>
                 <?php endif; ?>
                 </tbody>
