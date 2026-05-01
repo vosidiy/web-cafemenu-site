@@ -11,7 +11,7 @@ The app has two main surfaces:
 
 The multi-tenant model is simple: one cafe account maps to one row in `cafes`, and the cafe `username` serves both as the login identifier and the public URL slug. A cafe may also have an optional 6-digit pairing `code` for app-friendly JSON access.
 
-Menu content is multilingual per cafe. Each cafe can enable 1 to 3 languages in `cafe_languages`, and only category names, menu item names, menu item descriptions, and optional cart-fee labels are translated.
+Menu content is multilingual per cafe. Each cafe can enable 1 to 3 languages in `cafe_languages`, and public clients receive both translated menu content and a translated UI-text bundle for the enabled languages.
 
 Key implementation facts:
 
@@ -135,7 +135,7 @@ The public menu is split into shell and data:
 4. `public/app.js` bootstraps a Vue app.
 5. The Vue app fetches `/{username}/menu.json`.
 6. The client chooses a menu language from localStorage, browser preference, or the cafe default language.
-7. The client renders categories, translated menu items, and a local in-browser selection cart.
+7. The client renders categories, translated menu items, translated shell UI labels, and a local in-browser selection cart.
 8. When configured, the client applies the cafe's fixed or percentage cart fee to the displayed grand total.
 
 The cart is client-side only. There is no ordering, checkout, or server-side cart persistence.
@@ -177,7 +177,7 @@ Controllers are thin request handlers.
   - Resolves the active cafe by username or pairing code.
   - Resolves enabled cafe languages and default language.
   - Fetches active categories and public menu items.
-  - Builds the multilingual JSON structure consumed by the public UI and external clients.
+  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale` and top-level `ui_translations`.
 
 - `CafeLanguageService`
   - Exposes the fixed language catalog.

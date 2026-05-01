@@ -27,7 +27,7 @@
                 v-if="showLanguageSwitcher"
                 v-model="selectedLanguage"
                 class="btn btn--ghost btn--sm"
-                aria-label="Menu language"
+                :aria-label="uiText('menu_language_label')"
             >
                 <option
                     v-for="language in availableLanguages"
@@ -44,13 +44,13 @@
                 :disabled="!canInstall"
                 @click="promptInstall"
             >
-                Установить
+                {{ uiText('install_app') }}
             </button>
-            <span class="badge">Обновлено: {{ updatedAtLabel }}</span>
+            <span class="badge">{{ uiText('updated_at') }}: {{ updatedAtLabel }}</span>
         </div>
     </header>
 
-    <nav id="categories" class="categories" aria-label="Категории меню" :lang="selectedLanguage" :dir="currentDirection">
+    <nav id="categories" class="categories" :aria-label="uiText('categories_nav_label')" :lang="selectedLanguage" :dir="currentDirection">
         <button
             type="button"
             class="cat-btn"
@@ -58,7 +58,7 @@
             @click="selectCategory('all')"
         >
             <span class="cat-btn__content">
-                <span class="cat-btn__label">Все блюда</span>
+                <span class="cat-btn__label">{{ uiText('all_items') }}</span>
             </span>
         </button>
         <button
@@ -84,9 +84,9 @@
     </nav>
 
     <main class="menu-main" :lang="selectedLanguage" :dir="currentDirection">
-        <div v-if="isLoading" class="error-state">Загрузка меню...</div>
+        <div v-if="isLoading" class="error-state">{{ uiText('loading_menu') }}</div>
         <div v-else-if="errorMessage" class="error-state">{{ errorMessage }}</div>
-        <div v-else-if="items.length === 0" class="error-state">Пункты меню отсутствуют.</div>
+        <div v-else-if="items.length === 0" class="error-state">{{ uiText('menu_items_empty') }}</div>
         <div v-else-if="isAllFoodSelected" class="menu-sections">
             <section  v-for="group in groupedItems" :key="group.id" class="menu-section">
                 <div class="menu-section__head">
@@ -109,16 +109,16 @@
                                 <button v-if="itemQuantity(item.id) === 0"
                                     type="button" class="btn w-full"
                                     :disabled="!item.is_available" @click="incrementItem(item.id)">
-                                    {{ item.is_available ? 'Выбирать' : 'Недоступно' }}
+                                    {{ item.is_available ? uiText('select_item') : uiText('item_unavailable') }}
                                 </button>
 
                                 <div v-else class="item-added-control">
-                                    <button type="button" class="btn btn--qty" aria-label="Уменьшить"
+                                    <button type="button" class="btn btn--qty" :aria-label="uiText('decrease_quantity')"
                                         @click="decrementItem(item.id)">
                                         −
                                     </button>
                                     <span class="qty-label">{{ itemQuantity(item.id) }}</span>
-                                    <button type="button" class="btn btn--qty" aria-label="Увеличить"
+                                    <button type="button" class="btn btn--qty" :aria-label="uiText('increase_quantity')"
                                         @click="incrementItem(item.id)">
                                         +
                                     </button>
@@ -136,7 +136,7 @@
                 </div>
             </section>
         </div>
-        <div v-else-if="filteredItems.length === 0" class="error-state">В этой категории блюда отсутствуют.</div>
+        <div v-else-if="filteredItems.length === 0" class="error-state">{{ uiText('category_items_empty') }}</div>
         <div v-else class="item-grid">
             <article
                 v-for="item in filteredItems"
@@ -158,14 +158,14 @@
                             :disabled="!item.is_available"
                             @click="incrementItem(item.id)"
                         >
-                            {{ item.is_available ? 'Выбирать' : 'Недоступно' }}
+                            {{ item.is_available ? uiText('select_item') : uiText('item_unavailable') }}
                         </button>
 
                         <div v-else class="item-added-control">
                             <button
                                 type="button"
                                 class="btn btn--qty"
-                                aria-label="Уменьшить"
+                                :aria-label="uiText('decrease_quantity')"
                                 @click="decrementItem(item.id)"
                             >
                                 −
@@ -174,7 +174,7 @@
                             <button
                                 type="button"
                                 class="btn btn--qty"
-                                aria-label="Увеличить"
+                                :aria-label="uiText('increase_quantity')"
                                 @click="incrementItem(item.id)"
                             >
                                 +
@@ -206,7 +206,7 @@
             :disabled="!cartHasItems"
             @click="openCart"
         >
-            Вибрано ({{ cartItemCount }})
+            {{ uiText('selected_button') }} ({{ cartItemCount }})
         </button>
     </div>
 
@@ -233,8 +233,8 @@
         >
             <header class="cart-panel__head">
                 <div>
-                    <h2 id="cart-title">Выбранные блюда</h2>
-                    <p class="cart-panel__hint">Покажите официанту</p>
+                    <h2 id="cart-title">{{ uiText('selected_items_heading') }}</h2>
+                    <p class="cart-panel__hint">{{ uiText('show_waiter') }}</p>
                 </div>
                 <button
                     type="button"
@@ -242,13 +242,13 @@
                     id="close-cart"
                     @click="closeCart"
                 >
-                    Закрыть
+                    {{ uiText('close') }}
                 </button>
             </header>
 
             <div id="cart_items" class="cart-lines">
                 <div v-if="!cartHasItems" class="empty-cart">
-                    Пока ничего не выбрано.
+                    {{ uiText('cart_empty') }}
                 </div>
 
                 <template v-else>
@@ -268,7 +268,7 @@
                             <button
                                 type="button"
                                 class="btn btn--qty"
-                                aria-label="Уменьшить"
+                                :aria-label="uiText('decrease_quantity')"
                                 @click="decrementItem(cartItem.id)"
                             >
                                 −
@@ -277,7 +277,7 @@
                             <button
                                 type="button"
                                 class="btn btn--qty"
-                                aria-label="Увеличить"
+                                :aria-label="uiText('increase_quantity')"
                                 @click="incrementItem(cartItem.id)"
                             >
                                 +
@@ -285,10 +285,10 @@
                             <button
                                 type="button"
                                 class="btn btn--ghost btn--remove"
-                                aria-label="Убрать из корзины"
+                                :aria-label="uiText('remove_from_cart')"
                                 @click="removeItem(cartItem.id)"
                             >
-                                Убрать
+                                {{ uiText('remove_item') }}
                             </button>
                         </div>
                     </article>
@@ -298,11 +298,11 @@
             <footer class="cart-panel__foot">
                 <div class="cart-total">
                     <template v-if="showCartFeeBreakdown">
-                        <span>Подытог</span>
+                        <span>{{ uiText('subtotal') }}</span>
                         <span>{{ formatPrice(cartSubtotal) }} {{ currencyLabel }}</span>
                     </template>
                     <template v-else>
-                        <span>Итого</span>
+                        <span>{{ uiText('total') }}</span>
                         <span id="cart-total">{{ formatPrice(cartGrandTotal) }} {{ currencyLabel }}</span>
                     </template>
                 </div>
@@ -311,7 +311,7 @@
                     <span>{{ formatPrice(cartFeeAmount) }} {{ currencyLabel }}</span>
                 </div>
                 <div v-if="showCartFeeBreakdown" class="cart-total">
-                    <span>Итого</span>
+                    <span>{{ uiText('total') }}</span>
                     <span id="cart-total">{{ formatPrice(cartGrandTotal) }} {{ currencyLabel }}</span>
                 </div>
             </footer>
@@ -328,6 +328,7 @@
         defaultCafeName: <?= json_encode($cafe['cafe_name'] ?: $username, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         serviceWorkerUrl: <?= json_encode(site_url($username . '/sw.js'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         pwaScope: <?= json_encode(site_url($username), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
+        fallbackUiTranslations: <?= json_encode($fallbackUiTranslations ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
     };
 </script>
 <script src="<?= esc(base_url('vue.global.js')) ?>"></script>

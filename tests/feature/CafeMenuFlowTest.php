@@ -330,6 +330,8 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertArrayNotHasKey('version', $payload['meta']);
         $this->assertSame('ru', $payload['meta']['default_language']);
         $this->assertCount(2, $payload['meta']['languages']);
+        $this->assertSame('ru-RU', $payload['meta']['languages'][0]['locale']);
+        $this->assertSame('en-GB', $payload['meta']['languages'][1]['locale']);
         $this->assertSame('Fresh coffee every day', $payload['cafe']['slogan']);
         $this->assertTrue($payload['cafe']['extra_fee']['enabled']);
         $this->assertSame('percent', $payload['cafe']['extra_fee']['type']);
@@ -347,6 +349,11 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('Капучино', $payload['items'][0]['translations']['ru']['name']);
         $this->assertSame('Cappuccino', $payload['items'][0]['translations']['en']['name']);
         $this->assertSame('http://example.com/uploads/bestcafe/cappuccino.jpg', $payload['items'][0]['image_url']);
+        $this->assertSame(['ru', 'en'], array_keys($payload['ui_translations']));
+        $this->assertSame('Выбрано', $payload['ui_translations']['ru']['selected_button']);
+        $this->assertSame('Selected', $payload['ui_translations']['en']['selected_button']);
+        $this->assertSame('Выбрано позиций: {count}', $payload['ui_translations']['ru']['cart_bar_selected_count']);
+        $this->assertArrayNotHasKey('tr', $payload['ui_translations']);
     }
 
     public function testMenuJsonFallsBackToConfiguredEnglishDefaultWhenCafeHasNoLanguageRows(): void
@@ -374,10 +381,13 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $this->assertSame('en', $payload['meta']['default_language']);
         $this->assertSame('en', $payload['meta']['languages'][0]['code']);
+        $this->assertSame('en-GB', $payload['meta']['languages'][0]['locale']);
         $this->assertFalse($payload['cafe']['extra_fee']['enabled']);
         $this->assertNull($payload['cafe']['extra_fee']['type']);
         $this->assertNull($payload['cafe']['extra_fee']['value']);
         $this->assertSame([], $payload['cafe']['extra_fee']['translations']);
+        $this->assertSame(['en'], array_keys($payload['ui_translations']));
+        $this->assertSame('Menu language', $payload['ui_translations']['en']['menu_language_label']);
     }
 
     public function testRegistrationWithDuplicateUsernameFailsWithoutCreatingSecondCafe(): void

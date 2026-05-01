@@ -3,7 +3,6 @@
   const config = window.MenuAppConfig ?? {};
   const uncategorizedGroup = {
     id: 'uncategorized',
-    display_name: 'Другое',
     sort_order: Number.MAX_SAFE_INTEGER,
   };
 
@@ -17,7 +16,7 @@
         canInstall: false,
         isAppInstalled: false,
         cafe: {
-          name: config.defaultCafeName ?? 'Меню ресторана',
+          name: config.defaultCafeName ?? 'Restaurant menu',
           slogan: '',
           currency: 'UZS',
           extra_fee: {
@@ -31,9 +30,12 @@
           username: '',
           version: 0,
           updated_at: '',
+          default_language: 'en',
+          languages: [],
         },
         categories: [],
         items: [],
+        uiTranslationsPayload: config.fallbackUiTranslations ?? {},
         selectedLanguage: '',
         selectedItems: {},
         isCartOpen: false,
@@ -94,10 +96,18 @@
       defaultLanguage() {
         return this.meta.default_language || 'en';
       },
+      uiTranslations() {
+        return this.uiTranslationsPayload ?? {};
+      },
       currentDirection() {
         const selected = this.availableLanguages.find((language) => language.code === this.selectedLanguage);
 
         return selected?.dir || 'ltr';
+      },
+      currentLocale() {
+        const selected = this.availableLanguages.find((language) => language.code === this.selectedLanguage);
+
+        return selected?.locale || this.selectedLanguage || this.defaultLanguage || 'en';
       },
       showLanguageSwitcher() {
         return this.availableLanguages.length > 1;
@@ -160,19 +170,21 @@
         return this.extraFeeEnabled && this.cartHasItems;
       },
       cartFeeLabel() {
-        return this.resolveText(this.extraFeeConfig.translations, 'label') || 'Доп. сбор';
+        return this.resolveText(this.extraFeeConfig.translations, 'label') || this.uiText('extra_fee_default_label');
       },
       cartBarTitle() {
         if (!this.cartHasItems) {
-          return 'Корзина пуста';
+          return this.uiText('cart_bar_empty');
         }
 
-        return `Выбрано позиций: ${this.cartItemCount}`;
+        return this.uiText('cart_bar_selected_count', {
+          count: this.cartItemCount,
+        });
       },
       cartBarCaption() {
         return this.cartHasItems
-          ? 'Покажите заказ официанту'
-          : 'Выберите блюда';
+          ? this.uiText('cart_bar_ready_caption')
+          : this.uiText('cart_bar_empty_caption');
       },
     },
     mounted() {
@@ -199,18 +211,24 @@
           });
 
           if (!response.ok) {
-            throw new Error('Не удалось загрузить меню.');
+            throw new Error(this.uiText('load_menu_error'));
           }
 
           const data = await response.json();
           this.cafe = data.cafe ?? this.cafe;
           this.meta = data.meta ?? this.meta;
+          this.uiTranslationsPayload = {
+            ...(config.fallbackUiTranslations ?? {}),
+            ...(data.ui_translations ?? {}),
+          };
           this.selectedLanguage = this.pickInitialLanguage();
           this.categories = this.normalizeCategories(data.categories ?? []);
           this.items = this.normalizeItems(data.items ?? []);
           this.errorMessage = '';
         } catch (error) {
-          this.errorMessage = error instanceof Error ? error.message : 'Не удалось загрузить меню.';
+          this.errorMessage = error instanceof Error && error.message
+            ? error.message
+            : this.uiText('load_menu_error');
         } finally {
           this.isLoading = false;
         }
@@ -277,6 +295,32 @@
 
         return '';
       },
+      uiText(key, replacements = {}) {
+        const candidateLanguages = [
+          this.selectedLanguage,
+          this.defaultLanguage,
+          'en',
+        ];
+
+        let resolved = '';
+
+        for (const languageCode of candidateLanguages) {
+          const value = this.uiTranslations?.[languageCode]?.[key];
+
+          if (typeof value === 'string' && value.trim() !== '') {
+            resolved = value;
+            break;
+          }
+        }
+
+        if (resolved === '') {
+          return '';
+        }
+
+        return Object.entries(replacements).reduce((text, [token, value]) => {
+          return text.split(`{${token}}`).join(String(value));
+        }, resolved);
+      },
       categoryName(category) {
         return this.resolveText(category.translations, 'name') || '...';
       },
@@ -298,6 +342,7 @@
         if (!categoryMap.has(uncategorizedGroup.id)) {
           categoryMap.set(uncategorizedGroup.id, {
             ...uncategorizedGroup,
+            display_name: this.uiText('uncategorized'),
             items: [],
           });
         }
@@ -412,16 +457,16 @@
       },
       formatUpdatedAt(value) {
         if (!value) {
-          return 'Неизвестно';
+          return this.uiText('updated_at_unknown');
         }
 
         const date = new Date(value);
 
         if (Number.isNaN(date.getTime())) {
-          return 'Неизвестно';
+          return this.uiText('updated_at_unknown');
         }
 
-        return new Intl.DateTimeFormat('ru-RU', {
+        return new Intl.DateTimeFormat(this.currentLocale, {
           month: 'short',
           day: 'numeric',
           hour: '2-digit',

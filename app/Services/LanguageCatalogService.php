@@ -9,7 +9,7 @@ class LanguageCatalogService
     private const DEFAULT_CAFE_LANGUAGE_CODE = 'en';
 
     /**
-     * @return array<string, array{code: string, label: string, native_label: string, dir: string, flag: string}>
+     * @return array<string, array{code: string, label: string, native_label: string, dir: string, flag: string, locale: string}>
      */
     public function getSupportedLanguagesIndexed(): array
     {
@@ -20,6 +20,7 @@ class LanguageCatalogService
                 'native_label' => 'English',
                 'dir'          => 'ltr',
                 'flag'         => '🇬🇧',
+                'locale'       => 'en-GB',
             ],
             'tr' => [
                 'code'         => 'tr',
@@ -27,6 +28,7 @@ class LanguageCatalogService
                 'native_label' => 'Türkçe',
                 'dir'          => 'ltr',
                 'flag'         => '🇹🇷',
+                'locale'       => 'tr-TR',
             ],
             'ru' => [
                 'code'         => 'ru',
@@ -34,6 +36,7 @@ class LanguageCatalogService
                 'native_label' => 'Русский',
                 'dir'          => 'ltr',
                 'flag'         => '🇷🇺',
+                'locale'       => 'ru-RU',
             ],
             'uz' => [
                 'code'         => 'uz',
@@ -41,6 +44,7 @@ class LanguageCatalogService
                 'native_label' => 'O\'zbekcha',
                 'dir'          => 'ltr',
                 'flag'         => '🇺🇿',
+                'locale'       => 'uz-UZ',
             ],
             'ar' => [
                 'code'         => 'ar',
@@ -48,6 +52,7 @@ class LanguageCatalogService
                 'native_label' => 'العربية',
                 'dir'          => 'rtl',
                 'flag'         => '🇸🇦',
+                'locale'       => 'ar-SA',
             ],
             'zh' => [
                 'code'         => 'zh',
@@ -55,6 +60,7 @@ class LanguageCatalogService
                 'native_label' => '中文',
                 'dir'          => 'ltr',
                 'flag'         => '🇨🇳',
+                'locale'       => 'zh-CN',
             ],
             'ko' => [
                 'code'         => 'ko',
@@ -62,6 +68,7 @@ class LanguageCatalogService
                 'native_label' => '한국어',
                 'dir'          => 'ltr',
                 'flag'         => '🇰🇷',
+                'locale'       => 'ko-KR',
             ],
             'ja' => [
                 'code'         => 'ja',
@@ -69,6 +76,7 @@ class LanguageCatalogService
                 'native_label' => '日本語',
                 'dir'          => 'ltr',
                 'flag'         => '🇯🇵',
+                'locale'       => 'ja-JP',
             ],
             'es' => [
                 'code'         => 'es',
@@ -76,6 +84,7 @@ class LanguageCatalogService
                 'native_label' => 'Español',
                 'dir'          => 'ltr',
                 'flag'         => '🇪🇸',
+                'locale'       => 'es-ES',
             ],
             'de' => [
                 'code'         => 'de',
@@ -83,6 +92,7 @@ class LanguageCatalogService
                 'native_label' => 'Deutsch',
                 'dir'          => 'ltr',
                 'flag'         => '🇩🇪',
+                'locale'       => 'de-DE',
             ],
             'fa' => [
                 'code'         => 'fa',
@@ -90,6 +100,7 @@ class LanguageCatalogService
                 'native_label' => 'فارسی',
                 'dir'          => 'rtl',
                 'flag'         => '🇮🇷',
+                'locale'       => 'fa-IR',
             ],
             'fr' => [
                 'code'         => 'fr',
@@ -97,6 +108,7 @@ class LanguageCatalogService
                 'native_label' => 'Français',
                 'dir'          => 'ltr',
                 'flag'         => '🇫🇷',
+                'locale'       => 'fr-FR',
             ],
             'pt' => [
                 'code'         => 'pt',
@@ -104,6 +116,7 @@ class LanguageCatalogService
                 'native_label' => 'Português',
                 'dir'          => 'ltr',
                 'flag'         => '🇵🇹',
+                'locale'       => 'pt-PT',
             ],
             'it' => [
                 'code'         => 'it',
@@ -111,6 +124,7 @@ class LanguageCatalogService
                 'native_label' => 'Italiano',
                 'dir'          => 'ltr',
                 'flag'         => '🇮🇹',
+                'locale'       => 'it-IT',
             ],
             'hi' => [
                 'code'         => 'hi',
@@ -118,12 +132,13 @@ class LanguageCatalogService
                 'native_label' => 'हिन्दी',
                 'dir'          => 'ltr',
                 'flag'         => '🇮🇳',
+                'locale'       => 'hi-IN',
             ],
         ];
     }
 
     /**
-     * @return list<array{code: string, label: string, native_label: string, dir: string, flag: string}>
+     * @return list<array{code: string, label: string, native_label: string, dir: string, flag: string, locale: string}>
      */
     public function getSupportedLanguages(): array
     {

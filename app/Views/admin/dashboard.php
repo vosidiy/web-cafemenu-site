@@ -100,9 +100,7 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
                                                 class="rounded-top w-full"
                                             >
                                         <?php else: ?>
-                                            <div style="object-fit:cover; background:#ddd; height:180px; text-align:center; padding:10px">
-                                                Нет изображения
-                                            </div>
+                                            <img style="object-fit:cover; height:200px" src="/nophoto.png" title="No image" class="rounded-top w-full">
                                         <?php endif; ?>
 
                                         <div class="card-body">

@@ -22,6 +22,7 @@ class MenuBuilderService
         private readonly MenuItemModel $items = new MenuItemModel(),
         private readonly MenuItemTranslationModel $itemTranslations = new MenuItemTranslationModel(),
         private readonly LanguageCatalogService $languageCatalog = new LanguageCatalogService(),
+        private readonly PublicUiTextCatalogService $uiTextCatalog = new PublicUiTextCatalogService(),
     ) {
     }
 
@@ -109,6 +110,7 @@ class MenuBuilderService
                 'icon_url'   => menu_asset_url($category['icon_path']),
                 'translations' => $categoryTranslations[(int) $category['id']] ?? [],
             ], $categories),
+            'ui_translations' => $this->uiTextCatalog->getTranslationsForLanguages($languageCodes),
             'items'      => array_map(static fn (array $item): array => [
                 'id'           => (int) $item['id'],
                 'category_id'  => $item['category_id'] !== null ? (int) $item['category_id'] : null,
