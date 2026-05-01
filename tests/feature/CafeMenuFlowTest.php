@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\AdminUiTextCatalogService;
 use App\Controllers\CategoryController;
 use CodeIgniter\Test\CIUnitTestCase;
 use CodeIgniter\Test\FeatureTestTrait;
@@ -907,6 +908,83 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('Service fee', $payload['cafe']['extra_fee']['translations']['en']['label']);
     }
 
+    public function testCategoryCreateShowsUploadTooLargeErrorWhenMultipartRequestExceedsPostMaxSize(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '556678',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->withHeaders($this->multipartTooLargeHeaders())
+            ->post('admin/categories', []);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('error', $this->uploadTooLargeMessage('post_max_size'));
+    }
+
+    public function testCafeSettingsShowsUploadTooLargeErrorWhenMultipartRequestExceedsPostMaxSize(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '556679',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->withHeaders($this->multipartTooLargeHeaders())
+            ->post('admin/settings', []);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('error', $this->uploadTooLargeMessage('post_max_size'));
+    }
+
+    public function testMenuItemCreateShowsUploadTooLargeErrorInsteadOfCategoryOwnershipMessageWhenMultipartRequestExceedsPostMaxSize(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '556680',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->withHeaders($this->multipartTooLargeHeaders())
+            ->post('admin/menu-items', []);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('error', $this->uploadTooLargeMessage('post_max_size'));
+        $this->assertNotSame($this->selectedCategoryNotOwnedMessage(), $_SESSION['error'] ?? null);
+        $this->assertNull($db->table('menu_items')->where('cafe_id', 1)->get()->getRowArray());
+    }
+
     public function testMenuItemCreateRejectsSecondaryDescriptionWithoutName(): void
     {
         $db = Database::connect('tests');
@@ -1051,6 +1129,55 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         );
 
         return $categoryId === null ? $controller->create() : $controller->update($categoryId);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function multipartTooLargeHeaders(): array
+    {
+        return [
+            'Content-Type'   => 'multipart/form-data; boundary=----cafemenu-boundary',
+            'Content-Length' => (string) ($this->parseIniSizeToBytes((string) ini_get('post_max_size')) + 1),
+        ];
+    }
+
+    private function uploadTooLargeMessage(string $iniKey): string
+    {
+        return (new AdminUiTextCatalogService())->translate('upload_file_too_large', 'en', [
+            'limit' => $this->formatIniSize((string) ini_get($iniKey)),
+        ]);
+    }
+
+    private function selectedCategoryNotOwnedMessage(): string
+    {
+        return (new AdminUiTextCatalogService())->translate('selected_category_not_owned', 'en');
+    }
+
+    private function parseIniSizeToBytes(string $value): int
+    {
+        $normalized = trim($value);
+
+        if ($normalized === '') {
+            return 0;
+        }
+
+        $unit = strtoupper(substr($normalized, -1));
+        $size = (float) $normalized;
+
+        return match ($unit) {
+            'G'     => (int) round($size * 1024 ** 3),
+            'M'     => (int) round($size * 1024 ** 2),
+            'K'     => (int) round($size * 1024),
+            default => (int) round($size),
+        };
+    }
+
+    private function formatIniSize(string $value): string
+    {
+        $normalized = strtoupper(trim($value));
+
+        return $normalized !== '' ? $normalized : '0';
     }
 
     private function createSchema($db): void

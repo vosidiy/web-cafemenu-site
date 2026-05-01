@@ -132,6 +132,12 @@ class CategoryController extends BaseController
             return redirect()->to(site_url('login'));
         }
 
+        try {
+            $this->uploads->assertMultipartRequestWithinSizeLimit($this->request);
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
+
         $cafeId = (int) $cafe['id'];
         $category = $id !== null ? $this->findOwnedCategoryOrFail($id) : null;
         $data = $this->collectPayload($cafeId);
@@ -180,19 +186,12 @@ class CategoryController extends BaseController
 
     protected function storeCategoryIcon(string $username): ?string
     {
-        $file = $this->request->getFile('icon_file');
-
-        if ($file === null || ! $file->isValid() || $file->getError() === UPLOAD_ERR_NO_FILE) {
-            return null;
-        }
-
-        $mimeType = $file->getMimeType();
-
-        if (! in_array($mimeType, ['image/png', 'image/svg+xml'], true)) {
-            throw new RuntimeException($this->adminTexts->translate('upload_valid_png_svg_icon'));
-        }
-
-        return $this->uploads->storeUploadedImage($file, $username);
+        return $this->uploads->storeUploadedImage(
+            $this->request->getFile('icon_file'),
+            $username,
+            ['image/png', 'image/svg+xml'],
+            'upload_valid_png_svg_icon',
+        );
     }
 
     private function collectTranslations(): array

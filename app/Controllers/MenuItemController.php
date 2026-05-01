@@ -161,8 +161,15 @@ class MenuItemController extends BaseController
         $cafe = $this->cafeService->getCurrentCafe();
         $cafeId = (int) $cafe['id'];
         $currentItem = $id !== null ? $this->items->findByCafe($cafeId, $id) : null;
+
+        try {
+            $this->uploads->assertMultipartRequestWithinSizeLimit($this->request);
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
+
         $categoryId = $this->request->getPost('category_id');
-        $categoryId = $categoryId !== '' ? (int) $categoryId : null;
+        $categoryId = ($categoryId === null || $categoryId === '') ? null : (int) $categoryId;
 
         if ($categoryId !== null && $this->categories->findByCafe($cafeId, $categoryId) === null) {
             return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('selected_category_not_owned'));

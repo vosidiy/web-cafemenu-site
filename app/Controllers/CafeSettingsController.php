@@ -44,6 +44,12 @@ class CafeSettingsController extends BaseController
             return redirect()->to(site_url('login'));
         }
 
+        try {
+            $this->uploads->assertMultipartRequestWithinSizeLimit($this->request);
+        } catch (RuntimeException $exception) {
+            return redirect()->back()->withInput()->with('error', $exception->getMessage());
+        }
+
         $data = [
             'phone'             => trim((string) $this->request->getPost('phone')),
             'person_name'       => trim((string) $this->request->getPost('person_name')),

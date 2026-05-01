@@ -13,7 +13,7 @@
 
 <div class="card">
     <div class="card-body">
-        <form method="post" action="<?= esc($action) ?>" enctype="multipart/form-data">
+        <form id="menuItemForm" method="post" action="<?= esc($action) ?>" enctype="multipart/form-data">
             <?= csrf_field() ?>
             <?php $defaultLanguage = menu_default_language($languages, menu_configured_default_language()); ?>
             
@@ -52,7 +52,7 @@
                     <input type="number" step="0.01" min="0.01" name="price" class="form-control" value="<?= esc((string) menu_old('price', $item['price'] ?? '')) ?>" required> 
                 </div>
                 <div class="md:col-4 mb-3">
-                    <label class="form-label"><?= esc(admin_ui('category_label')) ?></label>
+                    <p class="form-label"><?= esc(admin_ui('category_label')) ?></p>
                     <select name="category_id" class="form-select">
                         <option value=""><?= esc(admin_ui('uncategorized')) ?></option>
                         <?php $selectedCategory = (string) menu_old('category_id', $item['category_id'] ?? ''); ?>
@@ -65,15 +65,43 @@
                 </div>
             </div>
             
-            <div class="row">
-            <div class="mb-4 md:col-3">
-                <label class="form-label"><?= esc(admin_ui('image_label')) ?></label>
-                <input type="file" name="image_file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.svg">
-                <?php if (! empty($item['image_path'])): ?>
-                    <div class="mt-2"><img src="<?= esc(menu_asset_url($item['image_path'])) ?>" alt="<?= esc(admin_ui('preview_alt')) ?>" class="img-thumbnail" style="max-height: 90px;"></div>
-                <?php endif; ?>
-            </div>
-            </div>
+	            <div class="row">
+	            <div class="mb-4 md:col-3">
+	                <div id="menuItemImageField" class="menu-item-image-field">
+	                <label class="form-label"><?= esc(admin_ui('image_label')) ?></label>
+                    <div id="menuItemImageDropzone" class="menu-item-image-picker"
+                    >
+                        <div class="card p-4 relative">
+                            <input type="file"
+                                id="menuItemImageFile"
+                                name="image_file"
+                                class="picker-area"
+                                accept=".jpg,.jpeg,.png,.webp"
+                            >
+                            <div class="p-5 text-center">
+                                <?= esc(admin_ui('image_drop_prompt')) ?>
+                                <span class="menu-item-image-browse"><?= esc(admin_ui('image_browse_action')) ?></span>
+                            </div>
+                        </div>
+                    </div>
+		                <div class="text-sm text-secondary">JPG, PNG, WEBP</div>
+		                <div id="menuItemImageStatus" class="menu-item-image-status is-hidden" aria-live="polite"></div>
+                    <div id="menuItemImagePreviewShell" class="menu-item-image-preview-shell is-hidden">
+                        <div class="menu-item-image-preview-frame">
+                            <img id="menuItemImagePreview" alt="<?= esc(admin_ui('preview_alt')) ?>">
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" id="menuItemImageRemove"><?= esc(admin_ui('image_remove_action')) ?></button>
+                        </div>
+                    </div>
+		                <?php if (! empty($item['image_path'])): ?>
+		                    <div id="menuItemCurrentImage" class="menu-item-current-image mt-2">
+	                        <img src="<?= esc(menu_asset_url($item['image_path'])) ?>" alt="<?= esc(admin_ui('preview_alt')) ?>" class="img-thumbnail" style="max-height: 90px;">
+	                    </div>
+	                <?php endif; ?>
+                    </div>
+	            </div>
+	            </div>
 
             <div class="row mb-5">
                 <div class="md:col-3 mb-4">
@@ -91,7 +119,28 @@
             <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_menu_item')) ?></button>
         </form>
     </div>
-</div>
-<br><br>
+	</div>
+	<br><br>
+<?= $this->endSection() ?>
 
+<?= $this->section('scripts') ?>
+<script src="<?= esc(base_url('plugins/compressor.min.js')) ?>"></script>
+<script src="<?= esc(base_url('admin-menu-item-image-uploader.js')) ?>"></script>
+<script>
+			    window.initMenuItemImageUploader?.({
+			        inputId: 'menuItemImageFile',
+		            fieldSelector: '#menuItemImageField',
+			        currentImageSelector: '#menuItemCurrentImage',
+			        statusSelector: '#menuItemImageStatus',
+		            previewShellSelector: '#menuItemImagePreviewShell',
+		            previewImageSelector: '#menuItemImagePreview',
+		            removeButtonSelector: '#menuItemImageRemove',
+			        maxImageDimension: 1200,
+			        outputQuality: 0.82,
+		        labels: {
+		            optimizing: <?= json_encode(admin_ui('optimize_image_in_progress'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+		            failed: <?= json_encode(admin_ui('optimize_image_failed'), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?>,
+		        }
+		    });
+</script>
 <?= $this->endSection() ?>

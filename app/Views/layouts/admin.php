@@ -8,7 +8,8 @@
 
     <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    
+
+    <?= $this->renderSection('head') ?>
 </head>
 <body class="min-h-100vh bg-secondary">
 
@@ -99,6 +100,8 @@
         this_dialog.close();    
     }
 </script>
+
+<?= $this->renderSection('scripts') ?>
 
 </body>
 </html>
