@@ -20,7 +20,6 @@ class CafeModel extends Model
         'slogan',
         'password_hash',
         'logo_path',
-        'pwa_icon_path',
         'currency_name',
         'theme_style',
         'address_text',
@@ -49,7 +48,7 @@ class CafeModel extends Model
         'extra_fee_enabled' => 'permit_empty|in_list[0,1]',
         'extra_fee_type'    => 'permit_empty|in_list[fixed,percent]',
         'extra_fee_value'   => 'permit_empty|decimal|greater_than[0]',
-        'status'        => 'required|in_list[active,inactive]',
+        'status'        => 'required|in_list[active,inactive,demo]',
     ];
 
     protected $skipValidation = false;
@@ -61,11 +60,21 @@ class CafeModel extends Model
             ->first();
     }
 
+    public function findByUsername(string $username): ?array
+    {
+        return $this->where('username', $username)->first();
+    }
+
     public function findActiveByCode(string $code): ?array
     {
         return $this->where('code', $code)
             ->where('status', 'active')
             ->first();
+    }
+
+    public function findByCode(string $code): ?array
+    {
+        return $this->where('code', $code)->first();
     }
 
     public function findRecentActive(int $limit = 10): array

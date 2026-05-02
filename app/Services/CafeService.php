@@ -30,14 +30,14 @@ class CafeService
         return is_numeric($cafeId) ? (int) $cafeId : null;
     }
 
-    public function getActiveCafeByUsername(string $username): ?array
+    public function getPublicCafeByUsername(string $username): ?array
     {
-        return $this->cafes->findActiveByUsername($username);
+        return $this->cafes->findByUsername($username);
     }
 
-    public function getActiveCafeByCode(string $code): ?array
+    public function getPublicCafeByCode(string $code): ?array
     {
-        return $this->cafes->findActiveByCode($code);
+        return $this->cafes->findByCode($code);
     }
 
     public function touchMenuUpdatedAt(int $cafeId): void

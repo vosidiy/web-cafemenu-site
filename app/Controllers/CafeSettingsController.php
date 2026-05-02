@@ -60,7 +60,7 @@ class CafeSettingsController extends BaseController
             'address_text'      => trim((string) $this->request->getPost('address_text')),
             'location_url'      => trim((string) $this->request->getPost('location_url')),
             'extra_fee_enabled' => $this->request->getPost('extra_fee_enabled') ? 1 : 0,
-            'status'            => 'active',
+            'status'            => $cafe['status'],
         ];
 
         $languageCodes = $this->cafeLanguages->normalizeLanguageCodes((array) $this->request->getPost('languages'));
@@ -82,17 +82,12 @@ class CafeSettingsController extends BaseController
 
         try {
             $logoPath = $this->uploads->storeUploadedImage($this->request->getFile('logo_file'), $cafe['username']);
-            $iconPath = $this->uploads->storeUploadedImage($this->request->getFile('pwa_icon_file'), $cafe['username']);
         } catch (RuntimeException $exception) {
             return redirect()->back()->withInput()->with('error', $exception->getMessage());
         }
 
         if ($logoPath !== null) {
             $data['logo_path'] = $logoPath;
-        }
-
-        if ($iconPath !== null) {
-            $data['pwa_icon_path'] = $iconPath;
         }
 
         $db = Database::connect();

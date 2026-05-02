@@ -23,12 +23,13 @@ class MenuBuilderService
         private readonly MenuItemTranslationModel $itemTranslations = new MenuItemTranslationModel(),
         private readonly LanguageCatalogService $languageCatalog = new LanguageCatalogService(),
         private readonly PublicUiTextCatalogService $uiTextCatalog = new PublicUiTextCatalogService(),
+        private readonly ActivationService $activationService = new ActivationService(),
     ) {
     }
 
     public function buildByUsername(string $username): ?array
     {
-        $cafe = $this->cafes->findActiveByUsername($username);
+        $cafe = $this->cafes->findByUsername($username);
 
         if ($cafe === null) {
             return null;
@@ -39,7 +40,7 @@ class MenuBuilderService
 
     public function buildByCode(string $code): ?array
     {
-        $cafe = $this->cafes->findActiveByCode($code);
+        $cafe = $this->cafes->findByCode($code);
 
         if ($cafe === null) {
             return null;
@@ -50,7 +51,6 @@ class MenuBuilderService
 
     private function buildFromCafe(array $cafe): array
     {
-
         $menuUpdatedAt = $cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? date('Y-m-d H:i:s');
         $defaultLanguageCode = $this->languageCatalog->getDefaultCafeLanguageCode();
 
@@ -65,10 +65,12 @@ class MenuBuilderService
 
         $extraFeeEnabled = (bool) ($cafe['extra_fee_enabled'] ?? false);
         $defaultLanguage = menu_default_language($languages, $defaultLanguageCode);
-        $categories = $this->categories->getByCafe((int) $cafe['id'], true);
-        $items = $this->items->getPublicItemsByCafe((int) $cafe['id']);
+        $publicStatus = (string) ($cafe['status'] ?? 'inactive');
+        $hasPublicMenu = in_array($publicStatus, ['active', 'demo'], true);
+        $categories = $hasPublicMenu ? $this->categories->getByCafe((int) $cafe['id'], true) : [];
+        $items = $hasPublicMenu ? $this->items->getPublicItemsByCafe((int) $cafe['id']) : [];
         $languageCodes = array_map(static fn (array $language): string => $language['language_code'], $languages);
-        $feeTranslations = $extraFeeEnabled
+        $feeTranslations = $extraFeeEnabled && $hasPublicMenu
             ? $this->groupFeeTranslations($this->feeTranslations->getByCafeId((int) $cafe['id'], $languageCodes))
             : [];
         $categoryTranslations = $this->groupCategoryTranslations(
@@ -90,20 +92,22 @@ class MenuBuilderService
             ],
             'cafe'       => [
                 'name'         => $cafe['cafe_name'],
+                'status'       => $publicStatus,
                 'slogan'       => $cafe['slogan'] ?? null,
                 'logo_url'     => menu_asset_url($cafe['logo_path']),
-                'pwa_icon_url' => menu_asset_url($cafe['pwa_icon_path']),
                 'currency'     => $cafe['currency_name'],
                 'theme_style'  => $cafe['theme_style'],
                 'address'      => $cafe['address_text'],
                 'location_url' => $cafe['location_url'],
+                'activation_url' => $this->activationService->getActivationUrl(),
                 'extra_fee'    => [
-                    'enabled'      => $extraFeeEnabled,
-                    'type'         => $extraFeeEnabled ? ($cafe['extra_fee_type'] ?? null) : null,
-                    'value'        => $extraFeeEnabled && $cafe['extra_fee_value'] !== null ? (float) $cafe['extra_fee_value'] : null,
+                    'enabled'      => $extraFeeEnabled && $hasPublicMenu,
+                    'type'         => $extraFeeEnabled && $hasPublicMenu ? ($cafe['extra_fee_type'] ?? null) : null,
+                    'value'        => $extraFeeEnabled && $hasPublicMenu && $cafe['extra_fee_value'] !== null ? (float) $cafe['extra_fee_value'] : null,
                     'translations' => $feeTranslations,
                 ],
             ],
+            'public_status' => $publicStatus,
             'categories' => array_map(static fn (array $category): array => [
                 'id'         => (int) $category['id'],
                 'sort_order' => (int) $category['sort_order'],

@@ -78,6 +78,17 @@
     </div>
 <?php endif; ?>
 
+<?php if (($showAdminActivationBanner ?? false) === true && $currentCafe !== null): ?>
+    <div class="alert mt-2 mb-0 alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <span>
+            <?= esc(($currentCafe['status'] ?? '') === 'demo'
+                ? 'Cafe is in demo mode. Activate it to go live.'
+                : 'Cafe is deactivated. Activate it to restore public access.') ?>
+        </span>
+        <a href="<?= esc($activationUrl ?? '#') ?>" class="btn btn-sm btn-default">Activate</a>
+    </div>
+<?php endif; ?>
+
 <?= $this->renderSection('content') ?>
 
 

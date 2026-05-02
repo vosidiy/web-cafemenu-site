@@ -3,6 +3,8 @@
 namespace App\Controllers;
 
 use App\Services\AdminLanguageService;
+use App\Services\ActivationService;
+use App\Services\CafeService;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -28,6 +30,7 @@ abstract class BaseController extends Controller
 
     protected $session;
     protected array $adminLanguage = [];
+    protected ActivationService $activationService;
 
     /**
      * @return void
@@ -43,7 +46,9 @@ abstract class BaseController extends Controller
 
         // Preload any models, libraries, etc, here.
         $this->session = service('session');
+        $this->activationService = new ActivationService();
         $this->bootAdminLanguageContext($request);
+        $this->bootActivationContext();
     }
 
     private function bootAdminLanguageContext(RequestInterface $request): void
@@ -64,6 +69,21 @@ abstract class BaseController extends Controller
             'adminLanguages' => $adminLanguageService->getSupportedLanguages(),
             'adminLanguageSwitchAction' => site_url('admin/language'),
             'adminLanguageRedirectTo' => $redirectTo,
+        ], 'raw');
+    }
+
+    private function bootActivationContext(): void
+    {
+        $currentCafe = null;
+
+        if (is_numeric($this->session->get('cafe_id'))) {
+            $currentCafe = (new CafeService())->getCurrentCafe();
+        }
+
+        service('renderer')->setData([
+            'activationUrl' => $this->activationService->getActivationUrl(),
+            'currentCafe' => $currentCafe,
+            'showAdminActivationBanner' => $this->activationService->shouldShowAdminBanner($currentCafe),
         ], 'raw');
     }
 }

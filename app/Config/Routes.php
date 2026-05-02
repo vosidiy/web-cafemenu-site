@@ -6,7 +6,7 @@ use CodeIgniter\Router\RouteCollection;
  * @var RouteCollection $routes
  */
 $routes->get('/', 'Home::index');
-$routes->get('ru', 'Home::index_ru'); 
+$routes->get('ru', 'Home::index_ru');
 $routes->get('sitemap.xml', 'SitemapController::index');
 
 $routes->view('thankyou', 'thankyou'); // uri and pagename
@@ -40,8 +40,6 @@ $routes->group('admin', static function ($routes) {
 });
 
 $routes->get('code/(:num)', 'MenuJsonController::byCode/$1', ['filter' => 'menuthrottle']);
-$routes->get('(:segment)/manifest.webmanifest', 'PwaController::manifest/$1');
-$routes->get('(:segment)/sw.js', 'PwaController::serviceWorker/$1');
 $routes->get('(:segment)/menu.json', 'MenuJsonController::index/$1', ['filter' => 'menuthrottle']);
 $routes->get('(:segment)/menu', 'MenuJsonController::index/$1', ['filter' => 'menuthrottle']);
 $routes->get('(:segment)', 'PublicController::index/$1');

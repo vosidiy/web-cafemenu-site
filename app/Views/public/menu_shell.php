@@ -6,14 +6,13 @@
     <title><?= esc($cafe['cafe_name'] ?: $username) ?></title>
     <meta name="robots" content="noindex,follow">
     <meta name="theme-color" content="#b45309">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <link rel="manifest" href="<?= esc(site_url($username . '/manifest.webmanifest')) ?>">
-    <link rel="apple-touch-icon" href="<?= esc(base_url('icon-192.png')) ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="/menu-favicon/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/menu-favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/menu-favicon/favicon-16x16.png">
+    <link rel="icon" href="/menu-favicon/favicon.ico">
+    <link rel="manifest" href="/menu-favicon/site.webmanifest">
     <link rel="stylesheet" href="<?= esc(base_url('style.css')) ?>">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui@6.1/dist/fancybox/fancybox.css">
-
-    <link rel="icon" href="/icon-192.png" type="image/png" />
 
 </head>
 <body>
@@ -23,6 +22,11 @@
     <header class="app-header">
         <h1>{{ cafeName }}</h1>
         <div class="status-row">
+            <?php if (($cafe['status'] ?? '') === 'demo'): ?>
+                <span class="badge">
+                    Demo cafe. <a href="<?= esc($activationUrl ?? '#') ?>">Activate now</a>
+                </span>
+            <?php endif; ?>
             <select
                 v-if="showLanguageSwitcher"
                 v-model="selectedLanguage"
@@ -37,15 +41,6 @@
                     {{ language.flag }} {{ language.native_label }}
                 </option>
             </select>
-            <button
-                v-if="!isAppInstalled"
-                type="button"
-                class="btn btn--ghost btn--sm"
-                :disabled="!canInstall"
-                @click="promptInstall"
-            >
-                {{ uiText('install_app') }}
-            </button>
             <span class="badge">{{ uiText('updated_at') }}: {{ updatedAtLabel }}</span>
         </div>
     </header>
@@ -326,8 +321,6 @@
         jsonUrl: <?= json_encode($jsonUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         placeholderUrl: <?= json_encode(base_url('placeholder.png'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         defaultCafeName: <?= json_encode($cafe['cafe_name'] ?: $username, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
-        serviceWorkerUrl: <?= json_encode(site_url($username . '/sw.js'), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
-        pwaScope: <?= json_encode(site_url($username), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
         fallbackUiTranslations: <?= json_encode($fallbackUiTranslations ?? [], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>,
     };
 </script>

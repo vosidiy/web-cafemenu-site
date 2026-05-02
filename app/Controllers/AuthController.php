@@ -46,7 +46,7 @@ class AuthController extends BaseController
             'password_hash'  => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
             'currency_name'  => trim((string) $this->request->getPost('currency_name')) ?: 'UZS',
             'theme_style'    => trim((string) $this->request->getPost('theme_style')) ?: 'theme1',
-            'status'         => 'active',
+            'status'         => 'demo',
         ];
 
         $password = (string) $this->request->getPost('password');
@@ -142,7 +142,7 @@ class AuthController extends BaseController
 
         $cafe = $this->cafes->where('username', $username)->first();
 
-        if ($cafe === null || $cafe['status'] !== 'active' || ! password_verify($password, $cafe['password_hash'])) {
+        if ($cafe === null || ! in_array($cafe['status'], ['active', 'demo'], true) || ! password_verify($password, $cafe['password_hash'])) {
             return redirect()->back()->withInput()->with('error', $this->adminTexts->translate('invalid_credentials'));
         }
 

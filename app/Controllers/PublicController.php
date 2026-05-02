@@ -16,10 +16,17 @@ class PublicController extends BaseController
 
     public function index(string $username): string
     {
-        $cafe = $this->cafeService->getActiveCafeByUsername($username);
+        $cafe = $this->cafeService->getPublicCafeByUsername($username);
 
         if ($cafe === null) {
             throw PageNotFoundException::forPageNotFound();
+        }
+
+        if ($cafe['status'] === 'inactive') {
+            return view('public/cafe_inactive', [
+                'username'      => $cafe['username'],
+                'cafe'          => $cafe,
+            ]);
         }
 
         return view('public/menu_shell', [

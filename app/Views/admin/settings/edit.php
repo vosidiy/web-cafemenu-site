@@ -115,13 +115,6 @@
                         <div class="mt-2"><img src="<?= esc(menu_asset_url($cafe['logo_path'])) ?>" alt="<?= esc(admin_ui('logo_label')) ?>" class="img-thumbnail" style="max-height: 90px;"></div>
                     <?php endif; ?>
                 </div>
-                <div class="md:col-4 mb-4">
-                    <label class="form-label"><?= esc(admin_ui('pwa_icon_label')) ?></label>
-                    <input type="file" name="pwa_icon_file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.svg">
-                    <?php if (! empty($cafe['pwa_icon_path'])): ?>
-                        <div class="mt-2"><img src="<?= esc(menu_asset_url($cafe['pwa_icon_path'])) ?>" alt="<?= esc(admin_ui('pwa_icon_label')) ?>" class="img-thumbnail" style="max-height: 90px;"></div>
-                    <?php endif; ?>
-                </div>
             </div>
 
             <hr>

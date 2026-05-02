@@ -70,7 +70,7 @@ $softwareSchema = [
                 <li><a href="#features" class="nav-link">Features</a></li>
                 <li><a href="#faq" class="nav-link">FAQs</a></li>
                 <li><a href="#" onclick="open_dialog('dialog_cafe')" class="nav-link">Restaurants ↗</a></li>
-                <li><a href="<?= esc($russianUrl) ?>" hidden class="nav-link">🇷🇺 In Russian ↗</a></li>
+                <li><a href="<?= esc($russianUrl) ?>" class="nav-link">🇷🇺 На русском ↗</a></li>
             </ul>
         </nav>
 
@@ -80,6 +80,10 @@ $softwareSchema = [
         </div>
     </div>
 </header>
+
+<div class="sm:d-none text-center p-2 border-bottom bg-neutral-100">
+    <a href="<?= esc($russianUrl) ?>" class="">🇷🇺 На русском ↗ </a>
+</div>
 
 
 <section class="pt-4">
@@ -226,6 +230,10 @@ $softwareSchema = [
                         <div class="mb-4">
                             <label class="form-label font-medium">Your phone number</label>
                             <input name="phone" required type="tel" class="form-control text-lg" value="+1">
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label font-medium">Your E-mail</label>
+                            <input name="email" required type="email" class="form-control text-lg">
                         </div>
                         <div class="text-secondary">
                             We will get back to you within 1-2 hours

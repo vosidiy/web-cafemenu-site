@@ -37,7 +37,6 @@ CREATE TABLE `cafes` (
   `slogan` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `logo_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `pwa_icon_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `currency_name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UZS',
   `theme_style` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme1',
   `address_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
@@ -55,10 +54,10 @@ CREATE TABLE `cafes` (
 -- Dumping data for table `cafes`
 --
 
-INSERT INTO `cafes` (`id`, `code`, `username`, `phone`, `person_name`, `cafe_name`, `slogan`, `password_hash`, `logo_path`, `pwa_icon_path`, `currency_name`, `theme_style`, `address_text`, `location_url`, `extra_fee_enabled`, `extra_fee_type`, `extra_fee_value`, `menu_updated_at`, `status`, `created_at`, `updated_at`) VALUES
-(1, NULL, 'bestcafe', '+998901112233', 'Muslimbek', 'Best Cafe', '', '$2y$12$l4sW6d9F2VGJ5u0A0FsNeOsqCO1nLpHVfdt8TPrXh.6Ht/bQGvv2G', 'uploads/bestcafe/1775393416_fe35f5633cc531f6aaa2.jpg', 'uploads/bestcafe/1775393425_d53a0d0134db4f641952.jpg', 'USD', 'theme2', 'Navoi street 12, Urgench', 'https://maps.google.com/?q=41.55,60.63', 0, NULL, NULL, '2026-04-28 19:33:17', 'active', '2026-04-02 21:36:13', '2026-04-28 19:33:17'),
-(2, NULL, 'daryo', '+998918500077', 'Rustam', 'Daryo by Bursa', 'Обслуживание / Xizmat  🛎️ 15%', '$2y$12$l4sW6d9F2VGJ5u0A0FsNeOsqCO1nLpHVfdt8TPrXh.6Ht/bQGvv2G', 'uploads/daryo/1776140379_8d3334629ed53d3686b9.png', 'uploads/daryo/1775329757_9e3c1df456d9e72868a4.png', 'UZS', 'theme1', '', '', 0, NULL, NULL, '2026-04-24 18:05:33', 'active', '2026-04-02 23:34:49', '2026-04-24 18:05:33'),
-(3, '197435', 'demo', '+998946875461', 'Ahmed', 'Super cafe', '', '$2y$10$Kns4LkkpUu.19V4X.KOTv.GYIlFVtyed1gzdhvW0GuGbc5D8Yosg.', NULL, NULL, 'UZS', 'theme1', '', '', 0, NULL, NULL, '2026-04-30 10:39:48', 'active', '2026-04-29 23:12:52', '2026-04-30 10:39:48');
+INSERT INTO `cafes` (`id`, `code`, `username`, `phone`, `person_name`, `cafe_name`, `slogan`, `password_hash`, `logo_path`, `currency_name`, `theme_style`, `address_text`, `location_url`, `extra_fee_enabled`, `extra_fee_type`, `extra_fee_value`, `menu_updated_at`, `status`, `created_at`, `updated_at`) VALUES
+(1, NULL, 'bestcafe', '+998901112233', 'Muslimbek', 'Best Cafe', '', '$2y$12$l4sW6d9F2VGJ5u0A0FsNeOsqCO1nLpHVfdt8TPrXh.6Ht/bQGvv2G', 'uploads/bestcafe/1775393416_fe35f5633cc531f6aaa2.jpg', 'USD', 'theme2', 'Navoi street 12, Urgench', 'https://maps.google.com/?q=41.55,60.63', 0, NULL, NULL, '2026-04-28 19:33:17', 'active', '2026-04-02 21:36:13', '2026-04-28 19:33:17'),
+(2, NULL, 'daryo', '+998918500077', 'Rustam', 'Daryo by Bursa', 'Обслуживание / Xizmat  🛎️ 15%', '$2y$12$l4sW6d9F2VGJ5u0A0FsNeOsqCO1nLpHVfdt8TPrXh.6Ht/bQGvv2G', 'uploads/daryo/1776140379_8d3334629ed53d3686b9.png', 'UZS', 'theme1', '', '', 0, NULL, NULL, '2026-04-24 18:05:33', 'active', '2026-04-02 23:34:49', '2026-04-24 18:05:33'),
+(3, '197435', 'demo', '+998946875461', 'Ahmed', 'Super cafe', '', '$2y$10$Kns4LkkpUu.19V4X.KOTv.GYIlFVtyed1gzdhvW0GuGbc5D8Yosg.', NULL, 'UZS', 'theme1', '', '', 0, NULL, NULL, '2026-04-30 10:39:48', 'active', '2026-04-29 23:12:52', '2026-04-30 10:39:48');
 
 -- --------------------------------------------------------
 

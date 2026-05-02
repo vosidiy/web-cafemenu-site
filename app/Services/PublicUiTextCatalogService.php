@@ -10,7 +10,6 @@ class PublicUiTextCatalogService
     private const TRANSLATIONS = [
         'en' => [
             'menu_language_label' => 'Menu language',
-            'install_app' => 'Install app',
             'updated_at' => 'Updated',
             'categories_nav_label' => 'Menu categories',
             'all_items' => 'All items',
@@ -41,7 +40,6 @@ class PublicUiTextCatalogService
         ],
         'tr' => [
             'menu_language_label' => 'Menu dili',
-            'install_app' => 'Uygulamayi yukle',
             'updated_at' => 'Guncellendi',
             'categories_nav_label' => 'Menu kategorileri',
             'all_items' => 'Tum yemekler',
@@ -72,7 +70,6 @@ class PublicUiTextCatalogService
         ],
         'ru' => [
             'menu_language_label' => 'Язык меню',
-            'install_app' => 'Установить',
             'updated_at' => 'Обновлено',
             'categories_nav_label' => 'Категории меню',
             'all_items' => 'Все блюда',
@@ -103,7 +100,6 @@ class PublicUiTextCatalogService
         ],
         'uz' => [
             'menu_language_label' => 'Menyu tili',
-            'install_app' => 'Ilovani o\'rnatish',
             'updated_at' => 'Yangilandi',
             'categories_nav_label' => 'Menyu bo\'limlari',
             'all_items' => 'Barcha taomlar',
@@ -134,7 +130,6 @@ class PublicUiTextCatalogService
         ],
         'ar' => [
             'menu_language_label' => 'لغة القائمة',
-            'install_app' => 'تثبيت التطبيق',
             'updated_at' => 'تم التحديث',
             'categories_nav_label' => 'فئات القائمة',
             'all_items' => 'كل الأصناف',
@@ -165,7 +160,6 @@ class PublicUiTextCatalogService
         ],
         'zh' => [
             'menu_language_label' => '菜单语言',
-            'install_app' => '安装应用',
             'updated_at' => '已更新',
             'categories_nav_label' => '菜单分类',
             'all_items' => '全部菜品',
@@ -196,7 +190,6 @@ class PublicUiTextCatalogService
         ],
         'ko' => [
             'menu_language_label' => '메뉴 언어',
-            'install_app' => '앱 설치',
             'updated_at' => '업데이트됨',
             'categories_nav_label' => '메뉴 카테고리',
             'all_items' => '모든 메뉴',
@@ -227,7 +220,6 @@ class PublicUiTextCatalogService
         ],
         'ja' => [
             'menu_language_label' => 'メニュー言語',
-            'install_app' => 'アプリをインストール',
             'updated_at' => '更新済み',
             'categories_nav_label' => 'メニューカテゴリ',
             'all_items' => 'すべての料理',
@@ -258,7 +250,6 @@ class PublicUiTextCatalogService
         ],
         'es' => [
             'menu_language_label' => 'Idioma del menu',
-            'install_app' => 'Instalar app',
             'updated_at' => 'Actualizado',
             'categories_nav_label' => 'Categorias del menu',
             'all_items' => 'Todos los platos',
@@ -289,7 +280,6 @@ class PublicUiTextCatalogService
         ],
         'de' => [
             'menu_language_label' => 'Menusprache',
-            'install_app' => 'App installieren',
             'updated_at' => 'Aktualisiert',
             'categories_nav_label' => 'Menukategorien',
             'all_items' => 'Alle Gerichte',
@@ -320,7 +310,6 @@ class PublicUiTextCatalogService
         ],
         'fa' => [
             'menu_language_label' => 'زبان منو',
-            'install_app' => 'نصب برنامه',
             'updated_at' => 'به‌روزرسانی شد',
             'categories_nav_label' => 'دسته‌بندی‌های منو',
             'all_items' => 'همه غذاها',
@@ -351,7 +340,6 @@ class PublicUiTextCatalogService
         ],
         'fr' => [
             'menu_language_label' => 'Langue du menu',
-            'install_app' => 'Installer l\'application',
             'updated_at' => 'Mis a jour',
             'categories_nav_label' => 'Categories du menu',
             'all_items' => 'Tous les plats',
@@ -382,7 +370,6 @@ class PublicUiTextCatalogService
         ],
         'pt' => [
             'menu_language_label' => 'Idioma do menu',
-            'install_app' => 'Instalar app',
             'updated_at' => 'Atualizado',
             'categories_nav_label' => 'Categorias do menu',
             'all_items' => 'Todos os pratos',
@@ -413,7 +400,6 @@ class PublicUiTextCatalogService
         ],
         'it' => [
             'menu_language_label' => 'Lingua del menu',
-            'install_app' => 'Installa app',
             'updated_at' => 'Aggiornato',
             'categories_nav_label' => 'Categorie del menu',
             'all_items' => 'Tutti i piatti',
@@ -444,7 +430,6 @@ class PublicUiTextCatalogService
         ],
         'hi' => [
             'menu_language_label' => 'मेन्यू भाषा',
-            'install_app' => 'ऐप इंस्टॉल करें',
             'updated_at' => 'अपडेट किया गया',
             'categories_nav_label' => 'मेन्यू श्रेणियां',
             'all_items' => 'सभी व्यंजन',

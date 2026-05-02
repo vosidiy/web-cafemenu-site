@@ -52,8 +52,6 @@ Each cafe is published under `/{username}`.
 - `GET /{username}/menu.json` -> public menu JSON
 - `GET /{username}/menu` -> JSON alias to the same response
 - `GET /code/{6-digit-code}` -> public menu JSON by pairing code
-- `GET /{username}/manifest.webmanifest` -> generated PWA manifest
-- `GET /{username}/sw.js` -> generated service worker
 
 Important routing note:
 
@@ -68,7 +66,14 @@ Important routing note:
 - Categories and menu items belong to a cafe through `cafe_id`.
 - Each cafe enables `1..3` menu languages through `cafe_languages`.
 - Newly registered cafes start with English (`en`) as the default menu language.
-- Public menu visibility depends on cafe status, category active state, and item availability.
+- Newly registered cafes start with status `demo`.
+- `Config\App::$activationUrl` is the global activation/payment link used across admin, public pages, and JSON.
+- Cafe status now supports `active`, `demo`, and `inactive`.
+- `active` and `demo` cafes expose the public menu, while `inactive` cafes show an activation page on `/{username}`.
+- Public JSON remains available for all known cafes: `active` and `demo` return menu data, while `inactive` returns an inactive envelope with empty `categories` and `items`.
+- Admin login is allowed for `active` and `demo` cafes.
+- `demo` and `inactive` cafes see an activation banner on all admin pages.
+- Public menu visibility still depends on cafe status, category active state, and item availability.
 
 ## Database and Schema
 
@@ -96,7 +101,6 @@ Important cafe fields:
 - `status`
 - `menu_updated_at`
 - `logo_path`
-- `pwa_icon_path`
 - `extra_fee_enabled`
 - `extra_fee_type`
 - `extra_fee_value`
@@ -149,7 +153,6 @@ Current response shape:
     "name": "Best Cafe",
     "slogan": "Fresh coffee every day",
     "logo_url": "http://example.com/uploads/bestcafe/logo.jpg",
-    "pwa_icon_url": null,
     "currency": "UZS",
     "theme_style": "theme2",
     "address": "Navoi street 12",
@@ -193,7 +196,9 @@ Current response shape:
 
 Current public filtering rules:
 
-- Cafe must be `active`.
+- Cafe status controls the response:
+  - `active` and `demo` return the public menu.
+  - `inactive` returns the same envelope with `public_status: "inactive"`, `cafe.status: "inactive"`, `cafe.activation_url` from `Config\App::$activationUrl`, and empty `categories` / `items`.
 - Categories must be active to appear in the public `categories` array.
 - Items must have `is_available = 1`.
 - Uncategorized items are allowed.
@@ -234,9 +239,11 @@ Current authentication behavior:
 
 - Passwords are hashed with `password_hash()`
 - Login uses `password_verify()`
+- Login accepts cafes with status `active` or `demo`
 - Session stores `cafe_id` and `username`
 - Protected admin routes use `AdminAuthFilter`
 - Guests are redirected to `/login` when they open protected admin routes
+- Admin pages show a shared activation banner for `demo` and `inactive` cafes using `Config\App::$activationUrl`
 
 Current password rules in code:
 
@@ -257,23 +264,14 @@ The tenant public page is an HTML shell rendered by PHP and hydrated by `public/
 
 Current behavior:
 
+- The shell links static favicon assets and a static manifest from `/menu-favicon/`
 - Vue fetches `/{username}/menu.json`
 - Vue stores the selected menu language in localStorage per cafe
 - Vue switches category and item text client-side with fallback to the cafe default language
 - Menu items are grouped by category in the client
 - The UI includes a local client-side selection cart with an optional per-cafe extra fee
-- The shell registers a tenant-scoped service worker
 - Fancybox is loaded from CDN for image previews
-
-Current PWA limitation:
-
-- The service worker currently handles only install / activate lifecycle events
-- It does not currently cache shell HTML, images, or fetch responses
-
-Current manifest limitation:
-
-- `manifest.webmanifest` uses global `icon-192.png` and `icon-512.png`
-- It does not currently use the uploaded cafe-specific `pwa_icon_path`
+- There is no tenant-specific manifest or service-worker route
 
 ## Tests
 
@@ -289,8 +287,8 @@ It currently verifies:
 - category translation persistence for enabled cafe languages
 - duplicate language rejection in cafe settings
 - menu item translation validation
-- public JSON returns multilingual metadata and translation maps while keeping existing public filtering
-- `/code/{6-digit-code}` JSON access works for cafes that have a pairing code
+- public HTML and JSON respect `active`, `demo`, and `inactive` cafe states
+- `/code/{6-digit-code}` JSON access works for demo cafes and returns an inactive envelope for inactive cafes
 
 ## Development Notes
 

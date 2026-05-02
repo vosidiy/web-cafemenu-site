@@ -57,8 +57,6 @@ Each cafe is published under `/{username}`.
 - `GET /{username}/menu.json` -> public JSON
 - `GET /{username}/menu` -> JSON alias to the same controller
 - `GET /code/{6-digit-code}` -> public JSON alias by cafe pairing code
-- `GET /{username}/manifest.webmanifest` -> generated PWA manifest
-- `GET /{username}/sw.js` -> generated service worker
 
 ## Routing Model
 
@@ -68,7 +66,7 @@ Route ordering matters:
 
 1. Marketing routes are declared first.
 2. Top-level auth routes and `/admin` routes are declared next.
-3. Code-based and tenant PWA/JSON routes are declared next.
+3. Code-based and tenant JSON routes are declared next.
 4. The final catch-all route is `GET /(:segment)` -> `PublicController::index/$1`.
 
 This means:
@@ -89,12 +87,13 @@ Registration flow:
 2. Normalize username by trimming, removing all whitespace, and lowercasing.
 3. Validate request data using the normalized username.
 4. Hash the password with `password_hash()`.
-5. Attempt to insert a row into `cafes` with a randomly generated 6-digit pairing code.
-6. If code collisions keep happening, insert the cafe with `code = NULL` and continue registration.
-7. Insert the default cafe language row from the centralized app language configuration, currently `en`.
-8. Regenerate the session.
-9. Store `cafe_id` and normalized `username` in session.
-10. Redirect to `/admin`.
+5. Set the new cafe status to `demo`.
+6. Attempt to insert a row into `cafes` with a randomly generated 6-digit pairing code.
+7. If code collisions keep happening, insert the cafe with `code = NULL` and continue registration.
+8. Insert the default cafe language row from the centralized app language configuration, currently `en`.
+9. Regenerate the session.
+10. Store `cafe_id` and normalized `username` in session.
+11. Redirect to `/admin`.
 
 Login flow:
 
@@ -129,25 +128,20 @@ Ownership enforcement is implemented in code:
 
 The public menu is split into shell and data:
 
-1. `PublicController::index($username)` resolves an active cafe by username.
-2. It renders `app/Views/public/menu_shell.php`.
-3. The view exposes `window.MenuAppConfig` containing the JSON URL, service worker URL, PWA scope, placeholder image, and default cafe name.
-4. `public/app.js` bootstraps a Vue app.
-5. The Vue app fetches `/{username}/menu.json`.
-6. The client chooses a menu language from localStorage, browser preference, or the cafe default language.
-7. The client renders categories, translated menu items, translated shell UI labels, and a local in-browser selection cart.
-8. When configured, the client applies the cafe's fixed or percentage cart fee to the displayed grand total.
+1. `PublicController::index($username)` resolves a cafe by username.
+2. For `active` and `demo`, it renders `app/Views/public/menu_shell.php`.
+3. For `inactive`, it renders a dedicated activation page instead of a 404.
+4. The shell links static favicon assets and a static manifest from `/menu-favicon/`.
+5. The shell view exposes `window.MenuAppConfig` containing the JSON URL, placeholder image, and default cafe name.
+6. `public/app.js` bootstraps a Vue app.
+7. The Vue app fetches `/{username}/menu.json`.
+8. The client chooses a menu language from localStorage, browser preference, or the cafe default language.
+9. The client renders categories, translated menu items, translated shell UI labels, and a local in-browser selection cart.
+10. When configured, the client applies the cafe's fixed or percentage cart fee to the displayed grand total.
+11. When the cafe status is `demo`, the shell shows an activation notice in the top bar using the centralized activation URL.
+12. Admin pages render a shared activation banner for `demo` and `inactive` cafes through the admin layout.
 
 The cart is client-side only. There is no ordering, checkout, or server-side cart persistence.
-
-### PWA flow
-
-Per-tenant PWA endpoints are generated dynamically:
-
-- `PwaController::manifest($username)` returns a JSON manifest.
-- `PwaController::serviceWorker($username)` returns JavaScript for the service worker.
-
-The public shell registers the service worker from `public/app.js` when supported by the browser.
 
 ## Layer Responsibilities
 
@@ -159,26 +153,29 @@ Controllers are thin request handlers.
 - `AuthController` handles registration, login, logout, username normalization, and best-effort pairing-code generation.
 - `AdminLanguageController` persists the selected admin UI language and redirects back to the current page.
 - `AdminController` loads dashboard data and public URLs for the current cafe.
-- `CafeSettingsController` updates cafe profile fields, logo, PWA icon, and password.
+- `CafeSettingsController` updates cafe profile fields, logo, and password while preserving the stored cafe status.
 - `CategoryController` manages category CRUD for the current cafe.
 - `MenuItemController` manages menu item CRUD and image uploads for the current cafe.
 - `MenuJsonController` returns the normalized public JSON payload.
 - `PublicController` renders the tenant menu shell.
-- `PwaController` returns tenant-scoped manifest and service worker responses.
 
 ### Services
 
 - `CafeService`
   - Resolves the current cafe from session.
-  - Resolves an active cafe by username.
-  - Resolves an active cafe by pairing code.
+  - Resolves a cafe by username for public routes.
+  - Resolves a cafe by pairing code for public routes.
   - Updates `menu_updated_at`.
 
+- `ActivationService`
+  - Resolves the centralized activation URL from application config.
+  - Decides whether the shared admin activation banner should render for the current cafe.
+
 - `MenuBuilderService`
-  - Resolves the active cafe by username or pairing code.
+  - Resolves a cafe by username or pairing code.
   - Resolves enabled cafe languages and default language.
-  - Fetches active categories and public menu items.
-  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale` and top-level `ui_translations`.
+  - Fetches active categories and public menu items only when cafe status is `active` or `demo`.
+  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale`, top-level `ui_translations`, `public_status`, and config-backed `cafe.activation_url`.
 
 - `AdminLanguageService`
   - Resolves the admin UI language from session, cookie, browser `Accept-Language`, then English fallback.
@@ -211,7 +208,7 @@ Controllers are thin request handlers.
 
 - `CafeModel`
   - Encapsulates the `cafes` table.
-  - Provides `findActiveByUsername()`, `findActiveByCode()`, and `findRecentActive()`.
+  - Provides general cafe lookup by username/code plus `findRecentActive()`.
   - Validates username, phone, status, theme, URL fields, and related profile data.
 
 - `CafeFeeTranslationModel`
@@ -299,7 +296,6 @@ Important fields:
 - `slogan`
 - `password_hash`
 - `logo_path`
-- `pwa_icon_path`
 - `currency_name`
 - `theme_style`
 - `address_text`
@@ -314,6 +310,8 @@ Behavior:
 - `username` is unique.
 - `code` is nullable and unique when present.
 - `status` controls public visibility and login eligibility.
+- `status` supports `active`, `demo`, and `inactive`.
+- `Config\App::$activationUrl` is the single source of truth for activation/payment links shown in admin, public HTML, and public JSON.
 - `menu_updated_at` is the menu freshness field for public consumers.
 
 #### `categories`
@@ -474,7 +472,6 @@ Response shape:
     "name": "Best Cafe",
     "slogan": "Fresh coffee every day",
     "logo_url": "http://example.com/uploads/bestcafe/logo.jpg",
-    "pwa_icon_url": null,
     "currency": "UZS",
     "theme_style": "theme2",
     "address": "Navoi street 12",
@@ -536,7 +533,8 @@ Notes:
 
 Public output is intentionally narrower than admin output:
 
-- Cafe must be active.
+- `active` and `demo` cafes return the public menu payload.
+- `inactive` cafes return the same envelope with `public_status = inactive`, `cafe.status = inactive`, `cafe.activation_url` from application config, and empty `categories` / `items`.
 - Categories must be active to appear in `categories`.
 - Items must have `is_available = 1`.
 - Uncategorized items are allowed when `category_id` is `NULL`.
@@ -599,8 +597,6 @@ The public shell depends on:
 - `public/style.css`
 - `public/vue.global.js`
 - `public/placeholder.png`
-- `public/icon-192.png`
-- `public/icon-512.png`
 
 The shell also loads Fancybox from a CDN for image lightbox behavior.
 
@@ -612,7 +608,8 @@ That test currently verifies:
 
 - guests are redirected away from protected admin routes
 - registration creates a cafe and stores a password hash
-- `/{username}/menu.json` returns only active categories and available items
+- public HTML and JSON respect `active`, `demo`, and `inactive` cafe statuses
+- `/{username}/menu.json` returns only active categories and available items when the cafe has a public menu
 - public JSON includes expected metadata and image URL formatting
 
 The repository also contains baseline example tests generated by the framework in `tests/unit`, `tests/session`, and `tests/database`.
@@ -621,8 +618,6 @@ The repository also contains baseline example tests generated by the framework i
 
 - `README.md` is partly a spec/history document and does not fully match the current implementation details.
 - `/{username}/menu` is a JSON alias, even though the product concept suggests it could be a user-facing menu page.
-- `app/Views/public/service_worker.php` only handles install and activate events. It does not currently cache the shell, images, or fetch responses.
-- `PwaController::manifest()` currently points to the global `icon-192.png` and `icon-512.png` assets, not the cafe-specific uploaded `pwa_icon_path`.
 - `app/Views/home_ru.php` is routed as the Russian landing page, but most visible content is still Uzbek.
 - Required filters in `app/Config/Filters.php` enable page cache globally. This is an operational concern because it affects all routes unless changed in configuration.
 - `Filters.php` also aliases `forcehttps`, but `App::$forceGlobalSecureRequests` is currently `false`, so HTTPS enforcement is not globally active by configuration alone.

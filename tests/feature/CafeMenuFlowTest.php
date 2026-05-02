@@ -15,10 +15,13 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     use FeatureTestTrait;
 
     private static bool $schemaReady = false;
+    private string $originalActivationUrl;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->originalActivationUrl = (string) config('App')->activationUrl;
 
         $db = Database::connect('tests');
 
@@ -34,6 +37,13 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $db->table('menu_items')->emptyTable();
         $db->table('categories')->emptyTable();
         $db->table('cafes')->emptyTable();
+    }
+
+    protected function tearDown(): void
+    {
+        config('App')->activationUrl = $this->originalActivationUrl;
+
+        parent::tearDown();
     }
 
     public function testProtectedAdminRouteRedirectsGuests(): void
@@ -63,6 +73,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertNotNull($row);
         $this->assertMatchesRegularExpression('/^\d{6}$/', (string) ($row['code'] ?? ''));
         $this->assertTrue(password_verify('secret123', $row['password_hash']));
+        $this->assertSame('demo', $row['status']);
 
         $languageRow = Database::connect('tests')->table('cafe_languages')->where('cafe_id', $row['id'])->get()->getRowArray();
 
@@ -87,6 +98,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $row = Database::connect('tests')->table('cafes')->where('username', 'bestcafe')->get()->getRowArray();
 
         $this->assertNotNull($row);
+        $this->assertSame('demo', $row['status']);
     }
 
     public function testRegistrationCanSucceedWithoutCodeWhenGenerationCollidesRepeatedly(): void
@@ -134,6 +146,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $this->assertNotNull($row);
         $this->assertNull($row['code']);
+        $this->assertSame('demo', $row['status']);
     }
 
     public function testMenuJsonReturnsMultilingualPayloadAndPublicFilters(): void
@@ -355,6 +368,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('Selected', $payload['ui_translations']['en']['selected_button']);
         $this->assertSame('Выбрано позиций: {count}', $payload['ui_translations']['ru']['cart_bar_selected_count']);
         $this->assertArrayNotHasKey('tr', $payload['ui_translations']);
+        $this->assertArrayNotHasKey('pwa_icon_url', $payload['cafe']);
     }
 
     public function testMenuJsonFallsBackToConfiguredEnglishDefaultWhenCafeHasNoLanguageRows(): void
@@ -389,6 +403,166 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame([], $payload['cafe']['extra_fee']['translations']);
         $this->assertSame(['en'], array_keys($payload['ui_translations']));
         $this->assertSame('Menu language', $payload['ui_translations']['en']['menu_language_label']);
+    }
+
+    public function testDemoCafeMenuShellShowsActivationNotice(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'democafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Demo Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'demo',
+        ]);
+
+        $result = $this->get('democafe');
+
+        $result->assertStatus(200);
+        $result->assertSee('Demo cafe.');
+        $result->assertSee('Activate now');
+        $result->assertSee('https://pay.example.com/activate');
+        $result->assertSee('/menu-favicon/apple-touch-icon.png');
+        $result->assertSee('/menu-favicon/favicon-32x32.png');
+        $result->assertSee('/menu-favicon/favicon-16x16.png');
+        $result->assertSee('/menu-favicon/site.webmanifest');
+        $result->assertDontSee('/democafe/manifest.webmanifest');
+        $result->assertDontSee('Install app');
+        $result->assertDontSee('/sw.js');
+    }
+
+    public function testInactiveCafeSlugShowsActivationPage(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'sleepycafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Sleepy Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'inactive',
+        ]);
+
+        $result = $this->get('sleepycafe');
+
+        $result->assertStatus(200);
+        $result->assertSee('Cafe is deactivated');
+        $result->assertSee('Activate cafe');
+        $result->assertSee('https://pay.example.com/activate');
+    }
+
+    public function testInactiveCafeMenuJsonReturnsInactiveEnvelope(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'sleepycafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Sleepy Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'inactive',
+            'created_at'      => '2026-04-02 14:30:00',
+            'updated_at'      => '2026-04-02 14:30:00',
+        ]);
+
+        $result = $this->get('sleepycafe/menu.json');
+
+        $result->assertStatus(200);
+        $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('inactive', $payload['public_status']);
+        $this->assertSame('inactive', $payload['cafe']['status']);
+        $this->assertSame('https://pay.example.com/activate', $payload['cafe']['activation_url']);
+        $this->assertSame([], $payload['categories']);
+        $this->assertSame([], $payload['items']);
+        $this->assertFalse($payload['cafe']['extra_fee']['enabled']);
+    }
+
+    public function testDemoCafeSeesAdminActivationBannerOnDashboard(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'democafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Demo Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'demo',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'democafe',
+        ])->get('admin');
+
+        $result->assertStatus(200);
+        $result->assertSee('Cafe is in demo mode. Activate it to go live.');
+        $result->assertSee('https://pay.example.com/activate');
+    }
+
+    public function testInactiveCafeSeesAdminActivationBannerOnCategoriesPage(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'sleepycafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Sleepy Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'inactive',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'sleepycafe',
+        ])->get('admin/categories');
+
+        $result->assertStatus(200);
+        $result->assertSee('Cafe is deactivated. Activate it to restore public access.');
+        $result->assertSee('https://pay.example.com/activate');
+    }
+
+    public function testActiveCafeDoesNotSeeAdminActivationBanner(): void
+    {
+        $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'activecafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Active Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'activecafe',
+        ])->get('admin');
+
+        $result->assertStatus(200);
+        $result->assertDontSee('Activate it to go live.');
+        $result->assertDontSee('Activate it to restore public access.');
     }
 
     public function testRegistrationWithDuplicateUsernameFailsWithoutCreatingSecondCafe(): void
@@ -476,9 +650,55 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result->assertRedirectTo('admin');
     }
 
+    public function testDemoCafeCanLogin(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'democafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Demo Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'demo',
+        ]);
+
+        $result = $this->post('login', [
+            'username' => 'democafe',
+            'password' => 'secret123',
+        ]);
+
+        $result->assertRedirectTo('admin');
+    }
+
+    public function testInactiveCafeCannotLogin(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'sleepycafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Sleepy Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'inactive',
+        ]);
+
+        $result = $this->post('login', [
+            'username' => 'sleepycafe',
+            'password' => 'secret123',
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('error');
+    }
+
     public function testMenuJsonCanBeFetchedByPairingCode(): void
     {
         $db = Database::connect('tests');
+        config('App')->activationUrl = 'https://pay.example.com/activate';
 
         $db->table('cafes')->insert([
             'id'              => 1,
@@ -512,6 +732,79 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $this->assertSame('bestcafe', $payload['meta']['username']);
         $this->assertSame('Best Cafe', $payload['cafe']['name']);
+        $this->assertSame('https://pay.example.com/activate', $payload['cafe']['activation_url']);
+    }
+
+    public function testInactiveCafeMenuJsonCanBeFetchedByPairingCodeAsInactiveEnvelope(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'sleepycafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Sleepy Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'inactive',
+            'created_at'      => '2026-04-02 14:30:00',
+            'updated_at'      => '2026-04-02 14:30:00',
+        ]);
+
+        $result = $this->get('code/123456');
+
+        $result->assertStatus(200);
+        $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('inactive', $payload['public_status']);
+        $this->assertSame([], $payload['items']);
+    }
+
+    public function testSettingsUpdatePreservesStoredCafeStatus(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'democafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Demo Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'currency_name' => 'UZS',
+            'theme_style'   => 'theme1',
+            'status'        => 'demo',
+        ]);
+
+        $db->table('cafe_languages')->insert([
+            'cafe_id'       => 1,
+            'language_code' => 'en',
+            'sort_order'    => 1,
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'democafe',
+        ])->post('admin/settings', [
+            'phone'         => '+998907770011',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Demo Cafe Updated',
+            'slogan'        => 'New slogan',
+            'currency_name' => 'UZS',
+            'theme_style'   => 'theme1',
+            'address_text'  => '',
+            'location_url'  => '',
+            'languages'     => ['en'],
+        ]);
+
+        $result->assertRedirectTo('admin/settings');
+
+        $row = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('demo', $row['status']);
+        $this->assertSame('Demo Cafe Updated', $row['cafe_name']);
     }
 
     public function testMenuJsonByInvalidPairingCodeReturnsNotFound(): void
@@ -1193,7 +1486,6 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 slogan VARCHAR(255) DEFAULT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 logo_path VARCHAR(255) DEFAULT NULL,
-                pwa_icon_path VARCHAR(255) DEFAULT NULL,
                 currency_name VARCHAR(20) NOT NULL DEFAULT "UZS",
                 theme_style VARCHAR(20) NOT NULL DEFAULT "theme1",
                 address_text VARCHAR(255) DEFAULT NULL,

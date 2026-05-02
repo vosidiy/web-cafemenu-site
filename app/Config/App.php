@@ -199,4 +199,11 @@ class App extends BaseConfig
      * @see http://www.w3.org/TR/CSP/
      */
     public bool $CSPEnabled = false;
+
+    /**
+     * Global activation/payment URL shown in admin banners, public notices,
+     * and public JSON payloads for cafes that need activation.
+     */
+    public string $activationUrl = '#';
+    
 }

@@ -12,9 +12,6 @@
         isLoading: true,
         errorMessage: '',
         selectedCategoryId: 'all',
-        deferredInstallPrompt: null,
-        canInstall: false,
-        isAppInstalled: false,
         cafe: {
           name: config.defaultCafeName ?? 'Restaurant menu',
           slogan: '',
@@ -188,16 +185,10 @@
       },
     },
     mounted() {
-      this.isAppInstalled = this.detectStandaloneMode();
-      window.addEventListener('beforeinstallprompt', this.handleBeforeInstallPrompt);
-      window.addEventListener('appinstalled', this.handleAppInstalled);
       document.addEventListener('keydown', this.handleDocumentKeydown);
-      this.registerServiceWorker();
       this.loadMenu();
     },
     beforeUnmount() {
-      window.removeEventListener('beforeinstallprompt', this.handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', this.handleAppInstalled);
       document.removeEventListener('keydown', this.handleDocumentKeydown);
       document.body.classList.remove('body--cart-open');
     },
@@ -367,42 +358,6 @@
       },
       removeItem(itemId) {
         delete this.selectedItems[itemId];
-      },
-      async registerServiceWorker() {
-        if (!('serviceWorker' in navigator) || !config.serviceWorkerUrl) {
-          return;
-        }
-
-        try {
-          await navigator.serviceWorker.register(config.serviceWorkerUrl, {
-            scope: config.pwaScope || undefined,
-          });
-        } catch (error) {
-          console.error('Не удалось зарегистрировать service worker.', error);
-        }
-      },
-      handleBeforeInstallPrompt(event) {
-        event.preventDefault();
-        this.deferredInstallPrompt = event;
-        this.canInstall = true;
-      },
-      async promptInstall() {
-        if (!this.deferredInstallPrompt) {
-          return;
-        }
-
-        await this.deferredInstallPrompt.prompt();
-        await this.deferredInstallPrompt.userChoice;
-        this.deferredInstallPrompt = null;
-        this.canInstall = false;
-      },
-      handleAppInstalled() {
-        this.deferredInstallPrompt = null;
-        this.canInstall = false;
-        this.isAppInstalled = true;
-      },
-      detectStandaloneMode() {
-        return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
       },
       openCart() {
         if (!this.cartHasItems) {
