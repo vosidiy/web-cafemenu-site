@@ -63,60 +63,45 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-            </div>
-            
-	            <div class="row">
-	            <div class="mb-4 md:col-3">
-	                <div id="menuItemImageField" class="menu-item-image-field">
-	                <label class="form-label"><?= esc(admin_ui('image_label')) ?></label>
-                    <div id="menuItemImageDropzone" class="menu-item-image-picker"
-                    >
-                        <div class="card p-4 relative">
-                            <input type="file"
-                                id="menuItemImageFile"
-                                name="image_file"
-                                class="picker-area"
-                                accept=".jpg,.jpeg,.png,.webp"
-                            >
-                            <div class="p-5 text-center">
-                                <?= esc(admin_ui('image_drop_prompt')) ?>
-                                <span class="menu-item-image-browse"><?= esc(admin_ui('image_browse_action')) ?></span>
-                            </div>
-                        </div>
-                    </div>
-		                <div class="text-sm text-secondary">JPG, PNG, WEBP</div>
-		                <div id="menuItemImageStatus" class="menu-item-image-status is-hidden" aria-live="polite"></div>
-                    <div id="menuItemImagePreviewShell" class="menu-item-image-preview-shell is-hidden">
-                        <div class="menu-item-image-preview-frame">
-                            <img id="menuItemImagePreview" alt="<?= esc(admin_ui('preview_alt')) ?>">
-                        </div>
-                        <div class="mt-2">
-                            <button type="button" id="menuItemImageRemove"><?= esc(admin_ui('image_remove_action')) ?></button>
-                        </div>
-                    </div>
-		                <?php if (! empty($item['image_path'])): ?>
-		                    <div id="menuItemCurrentImage" class="menu-item-current-image mt-2">
-	                        <img src="<?= esc(menu_asset_url($item['image_path'])) ?>" alt="<?= esc(admin_ui('preview_alt')) ?>" class="img-thumbnail" style="max-height: 90px;">
-	                    </div>
-	                <?php endif; ?>
-                    </div>
-	            </div>
-	            </div>
-
-            <div class="row mb-5">
-                <div class="md:col-3 mb-4">
+                <div class="col-2 mb-4">
                     <label class="form-label"><?= esc(admin_ui('sort_order')) ?></label>
                     <input type="number" name="sort_order" class="form-control" value="<?= esc((string) menu_old('sort_order', $item['sort_order'] ?? 0)) ?>" required>
                 </div>
-                <div class="md:col-3 d-flex  mb-4 align-items-end">
-                    <div class="form-check mb-2">
-                        <input class="form-check-input" type="checkbox" name="is_available" id="isAvailable" value="1" <?= (int) menu_old('is_available', $item['is_available'] ?? 1) === 1 ? 'checked' : '' ?>>
-                        <label class="form-check-label" for="isAvailable"><?= esc(admin_ui('available')) ?></label>
+            </div>
+            
+
+            <label class="form-label"><?= esc(admin_ui('image_label')) ?> <span class="text-sm text-secondary">JPG, PNG, WEBP</span> </label>
+            <div id="menuItemImageField" class="d-flex gap-2">
+                <div id="menuItemImageDropzone">
+                    <div class="border-strong rounded min-w-60 max-w-80 h-30 overflow-hidden hover:border-color-primary p-4 relative">
+                        <input type="file" class="absolute top-4 bottom-0 left-4 right-0" id="menuItemImageFile" name="image_file" class="picker-area" accept=".jpg,.jpeg,.png,.webp">
+                        <p class="pt-8 text-muted">
+                            <?= esc(admin_ui('image_drop_prompt')) ?>
+                            <span class="text-primary"><?= esc(admin_ui('image_browse_action')) ?></span>
+                        </p>
                     </div>
                 </div>
+                <div id="menuItemImagePreviewShell" class="border relative h-30 bg-neutral-300 max-w-40 overflow-hidden p-1 rounded d-none">
+                    <img class="max-h-full" id="menuItemImagePreview">
+                    <button type="button" class="absolute top-1 right-1" title=" <?= esc(admin_ui('image_remove_action')) ?>" id="menuItemImageRemove"> ❌ </button>
+                </div>
+                <?php if (! empty($item['image_path'])): ?>
+                 <div id="menuItemCurrentImage" class="border relative h-30 bg-neutral-300 max-w-40 overflow-hidden p-1 rounded">
+                    <img class="max-h-full" src="<?= esc(menu_asset_url($item['image_path'])) ?>">
+                </div>
+                <?php endif; ?>
+            </div>
+            <div class="h-7"><p id="menuItemImageStatus" class="text-orange d-none" aria-live="polite"></p></div>
+                    
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" name="is_available" id="isAvailable" value="1" <?= (int) menu_old('is_available', $item['is_available'] ?? 1) === 1 ? 'checked' : '' ?>>
+                <label class="form-check-label" for="isAvailable"><?= esc(admin_ui('available')) ?></label>
             </div>
 
-            <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_menu_item')) ?></button>
+            <div class="d-flex mt-6">
+                <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_menu_item')) ?></button>
+                <a href="/admin" class="ml-4 btn btn-default"> Cancel </a>
+            </div>
         </form>
     </div>
 	</div>

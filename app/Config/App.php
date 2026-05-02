@@ -204,6 +204,6 @@ class App extends BaseConfig
      * Global activation/payment URL shown in admin banners, public notices,
      * and public JSON payloads for cafes that need activation.
      */
-    public string $activationUrl = '#';
+    public string $activationUrl = 'http://t.me/cafemenu_uz?direct';
     
 }

@@ -121,7 +121,7 @@ class AuthController extends BaseController
             'username' => $data['username'],
         ]);
 
-        return redirect()->to(site_url('admin'))->with('success', $this->adminTexts->translate('account_created_success'));
+        return redirect()->to(site_url('admin'));
     }
 
     public function login()

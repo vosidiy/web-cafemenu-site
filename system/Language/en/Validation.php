@@ -40,7 +40,7 @@ return [
     'is_natural'            => 'The {field} field must only contain digits.',
     'is_natural_no_zero'    => 'The {field} field must only contain digits and must be greater than zero.',
     'is_not_unique'         => 'The {field} field must contain a previously existing value in the database.',
-    'is_unique'             => 'The {field} field must contain a unique value.',
+    'is_unique'             => 'The {field} / login was already taken. Try different name',
     'less_than'             => 'The {field} field must contain a number less than {param}.',
     'less_than_equal_to'    => 'The {field} field must contain a number less than or equal to {param}.',
     'matches'               => 'The {field} field does not match the {param} field.',

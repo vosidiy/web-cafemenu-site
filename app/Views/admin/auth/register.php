@@ -35,7 +35,7 @@
 </header>
 
 <div class="container" style="max-width:480px">
-    <article class="card mt-10 md:mt-20 shadow">
+    <article class="card mt-8 md:mt-10 shadow">
         <div class="card-body">
             <h1 class="text-xl mb-4"><?= esc(admin_ui('register_heading')) ?></h1>
 
@@ -60,11 +60,11 @@
                 <div class="mb-4">
                     <label class="form-label mb-0"><?= esc(admin_ui('username_label')) ?></label>
                     <div class="text-sm text-secondary mb-2"><?= esc(admin_ui('username_hint')) ?></div>
-                    <input type="text" name="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
+                    <input type="text" name="username" placeholder="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('cafe_name_label')) ?></label>
-                    <input type="text" name="cafe_name" class="form-control" value="<?= esc(menu_old('cafe_name')) ?>">
+                    <input type="text" name="cafe_name"  placeholder="Great Cafe" class="form-control" value="<?= esc(menu_old('cafe_name')) ?>">
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('phone_label')) ?></label>
@@ -72,25 +72,25 @@
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('owner_name_label')) ?></label>
-                    <input type="text" name="person_name" class="form-control" value="<?= esc(menu_old('person_name')) ?>" required>
+                    <input type="text" name="person_name" placeholder="Full name" class="form-control" value="<?= esc(menu_old('person_name')) ?>" required>
                 </div>
                 <div class="mb-4">
-                    <label class="form-label"><?= esc(admin_ui('password_label')) ?></label>
+                    <label class="form-label"><?= esc(admin_ui('password_label')) ?> </label>
                     <input type="password" name="password" class="form-control" required>
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('password_confirm_label')) ?></label>
                     <input type="password" name="password_confirm" class="form-control" required>
                 </div>
-                <div class="mt-4">
+                <div class="mt-6">
                     <button type="submit" class="btn w-full btn-primary"><?= esc(admin_ui('sign_up')) ?></button>
                 </div>
             </form>
         </div>
     </article>
 
-    <p class="text-center my-5">
-        <a href="<?= site_url('login') ?>"><?= esc(admin_ui('already_have_account')) ?> <?= esc(admin_ui('login_link_label')) ?></a>
+    <p class="text-center my-5"> <?= esc(admin_ui('already_have_account')) ?> <br>
+        <a href="<?= site_url('login') ?>"> <?= esc(admin_ui('login_link_label')) ?> (Admin login) </a>
     </p>
 
 </div>

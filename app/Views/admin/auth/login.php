@@ -48,7 +48,7 @@
                     <?= csrf_field() ?>
                     <div class="mb-4">
                         <label class="form-label"><?= esc(admin_ui('username_label')) ?></label>
-                        <input type="text" name="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
+                        <input type="text" name="username" placeholder="democafe" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
                     </div>
                     <div class="mb-4">
                         <label class="form-label"><?= esc(admin_ui('password_label')) ?></label>

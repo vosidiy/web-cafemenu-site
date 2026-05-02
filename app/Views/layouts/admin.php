@@ -79,13 +79,13 @@
 <?php endif; ?>
 
 <?php if (($showAdminActivationBanner ?? false) === true && $currentCafe !== null): ?>
-    <div class="alert mt-2 mb-0 alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2">
-        <span>
+    <div class="alert mt-3 alert-warning">
+        <p class="text-lg font-medium">
             <?= esc(($currentCafe['status'] ?? '') === 'demo'
-                ? 'Cafe is in demo mode. Activate it to go live.'
-                : 'Cafe is deactivated. Activate it to restore public access.') ?>
-        </span>
-        <a href="<?= esc($activationUrl ?? '#') ?>" class="btn btn-sm btn-default">Activate</a>
+                ? 'Cafe is in demo mode. 7 Days free trial.'
+                : 'Cafe is deactivated. Activate it to restore access.') ?>
+        </p>
+        <a target="_blank" href="<?= esc($activationUrl ?? '#') ?>" class="btn btn-sm btn-orange md:ml-auto">Activate now</a>
     </div>
 <?php endif; ?>
 

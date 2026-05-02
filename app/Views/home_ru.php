@@ -68,14 +68,15 @@ $softwareSchema = [
             <ul class="nav nav-col md:flex-row mt-4 md:mt-0">
                 <li><a href="#header" class="nav-link">Главная</a></li>
                 <li><a href="#features" class="nav-link">Возможности</a></li>
-                <li><a href="#faq" class="nav-link">Вопросы и ответы</a></li>
-                <li><a href="#" onclick="open_dialog('dialog_cafe')" class="nav-link">Рестораны ↗</a></li>
+                <li><a href="#faq" class="nav-link">Вопрос-ответ</a></li> 
+                <li><a href="#" onclick="open_dialog('dialog_cafe')" class="nav-link">Рестораны </a></li>
+                <li><a href="#" onclick="open_dialog('dialog_support')" class="nav-link">Контакт</a></li>
                 <li><a href="<?= esc($englishUrl) ?>" class="nav-link">🇺🇸 English ↗</a></li>
             </ul>
         </nav>
 
         <div class="d-none md:d-block">
-            <a href="#contact" class="btn btn-default">Связаться</a>
+            <a href="<?= site_url('register') ?>" class="btn btn-default">Создать меню</a>
             <a href="<?= site_url('login') ?>" class="btn btn-orange">Вход в админ</a>
         </div>
     </div>
@@ -98,7 +99,7 @@ $softwareSchema = [
                         Обновляйте блюда, цены, акции и гостевой контент быстро, без ручной переделки меню на каждом устройстве.
                     </p>
                     <div class="mb-4 d-flex flex-col sm:flex-row gap-2">
-                        <a href="#contact" class="btn btn-lg btn-orange">Запросить демо</a>
+                        <a href="<?= site_url('register') ?>" class="btn btn-lg btn-orange">Создать меню</a>
                         <a href="#apps" class="btn btn-lg btn-default border-orange">Скачать приложения</a>
                     </div>
                 </main>
@@ -208,50 +209,6 @@ $softwareSchema = [
     </div>
 </section>
 
-
-
-<section class="pt-10 pb-16" id="contact">
-    <div class="container">
-        <div class="row">
-            <div class="md:col-6 mx-auto">
-                <article class="card shadow-lg bg-neutral-100 border-orange border-width-3 md:p-8 p-4 rounded-lg">
-                    <h2 class="mb-3 text-2xl lg:text-3xl">Запросите демо CafeMenu</h2>
-                    <p class="mb-5 text-secondary">Расскажите о своём кафе, ресторане или баре, и мы свяжемся с вами с демонстрацией и рекомендациями по запуску.</p>
-                    <form action="https://api.web3forms.com/submit" method="POST">
-                        <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
-                        <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
-                        <input type="hidden" name="subject" value="Cafemenu Message from Website">
-
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Название кафе</label>
-                            <input name="cafe" required type="text" class="form-control text-lg" placeholder="Название бренда или заведения">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Ваш номер телефона</label>
-                            <input name="phone" required type="tel" class="form-control text-lg" value="+1">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Ваш e-mail</label>
-                            <input name="email" required type="email" class="form-control text-lg">
-                        </div>
-                        <div class="text-secondary">
-                            Мы свяжемся с вами в течение 1-2 часов
-                        </div>
-                        <div class="mt-5 gap-2 d-flex">
-                            <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Отправить заявку</button>
-                        </div>
-                    </form>
-
-                    <hr>
-                    <p class="text-muted text-center mb-4">ИЛИ</p>
-                    <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">Написать в Telegram</a>
-                </article>
-            </div>
-        </div>
-    </div>
-</section>
-
-
 <section class="py-10 border-top" id="apps">
     <div class="container" style="max-width:900px;">
         <header class="text-center mb-10 mx-auto">
@@ -320,7 +277,6 @@ $softwareSchema = [
 
 
 
-
 <footer class="border-top bg-orange-100 py-12">
     <div class="container">
         <section class="d-flex align-items-center flex-col lg:flex-row lg:justify-content-between">
@@ -334,9 +290,11 @@ $softwareSchema = [
     </div>
 </footer>
 
-<dialog class="dialog mt-8" id="form_request">
+
+
+<dialog class="dialog mt-8" id="dialog_support">
     <header class="dialog-header">
-        <h5>Запросить демо</h5>
+        <h5>Контакт</h5>
         <button class="btn btn-icon" onclick="close_dialog(this)">
             <svg viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none">
                 <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" stroke-width="2"></path>
@@ -344,26 +302,36 @@ $softwareSchema = [
         </button>
     </header>
     <div class="dialog-body">
-        <form action="https://api.web3forms.com/submit" method="POST">
-            <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
-            <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
-            <input type="hidden" name="subject" value="Cafemenu Message from Website">
+        <article>
+            <form action="https://api.web3forms.com/submit" method="POST">
+                <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
+                <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
+                <input type="hidden" name="subject" value="Cafemenu Message from Website">
 
-            <div class="mb-4">
-                <label class="form-label font-medium">Название кафе</label>
-                <input name="cafe" required type="text" class="form-control text-lg" placeholder="Название бренда или заведения">
-            </div>
-            <div class="mb-4">
-                <label class="form-label font-medium">Ваш номер телефона</label>
-                <input name="phone" required type="tel" class="form-control text-lg" value="+998">
-            </div>
-            <div class="text-secondary">
-                Мы свяжемся с вами в течение 1-2 часов
-            </div>
-            <div class="mt-5 gap-2 d-flex">
-                <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Отправить заявку</button>
-            </div>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Название кафе</label>
+                    <input name="cafe" required type="text" class="form-control text-lg" placeholder="Название заведения">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Ваш номер телефона</label>
+                    <input name="phone" required type="tel" class="form-control text-lg" value="+1">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Ваш E-mail</label>
+                    <input name="email" required type="email" class="form-control text-lg">
+                </div>
+                <div class="text-secondary">
+                    Мы свяжемся с вами в течение 1-2 часов.
+                </div>
+                <div class="mt-5 gap-2 d-flex">
+                    <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Отправить запрос</button>
+                </div>
+            </form>
+
+            <hr>
+            <p class="text-muted text-center mb-4">ИЛИ</p>
+            <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">💬 Сообщение через Telegram</a>
+        </article>
     </div>
 </dialog>
 

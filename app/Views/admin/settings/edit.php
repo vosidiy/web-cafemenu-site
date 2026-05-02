@@ -105,9 +105,6 @@
                         <?php endforeach; ?>
                     </select>
                 </div>
-            </div>
-            
-            <div class="row">
                 <div class="md:col-4 mb-4">
                     <label class="form-label"><?= esc(admin_ui('logo_label')) ?></label>
                     <input type="file" name="logo_file" class="form-control" accept=".jpg,.jpeg,.png,.webp,.svg">
@@ -116,7 +113,7 @@
                     <?php endif; ?>
                 </div>
             </div>
-
+            
             <hr>
             <h5 class="text-xl mb-3">💵 <?= esc(admin_ui('extra_fee_section')) ?></h5>
 

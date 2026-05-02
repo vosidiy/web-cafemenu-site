@@ -54,9 +54,7 @@ $softwareSchema = [
                 <div style="font-size:24px;" class="text-orange-800 font-semibold ml-1">Cafe<span class="text-secondary">Menu</span></div>
             </a>
             <div class="md:d-none ml-auto">
-                <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-icon btn-default" aria-label="Contact CafeMenu on Telegram">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-icon lucide-phone"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
-                </a>
+                
                 <a href="<?= site_url('login') ?>" class="btn btn-orange">Login</a>
                 <button class="btn btn-neutral ml-1 btn-icon" onclick="toggleMenu()" aria-label="Open navigation menu">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-menu-icon lucide-menu"><path d="M4 5h16"/><path d="M4 12h16"/><path d="M4 19h16"/></svg>
@@ -69,13 +67,14 @@ $softwareSchema = [
                 <li><a href="#header" class="nav-link">Home</a></li>
                 <li><a href="#features" class="nav-link">Features</a></li>
                 <li><a href="#faq" class="nav-link">FAQs</a></li>
-                <li><a href="#" onclick="open_dialog('dialog_cafe')" class="nav-link">Restaurants ↗</a></li>
-                <li><a href="<?= esc($russianUrl) ?>" class="nav-link">🇷🇺 На русском ↗</a></li>
+                <li><a href="#" onclick="open_dialog('dialog_cafe')" class="nav-link">Restaurants </a></li>
+                <li><a href="#" onclick="open_dialog('dialog_support')" class="nav-link">Support </a></li>
+                <li class="d-none md:d-block"><a href="<?= esc($russianUrl) ?>" class="nav-link">🇷🇺 На русском ↗</a></li>
             </ul>
         </nav>
 
         <div class="d-none md:d-block">
-            <a href="#contact" class="btn btn-default">Contact</a>
+            <a href="<?= site_url('register') ?>" class="btn btn-default">New menu</a>
             <a href="<?= site_url('login') ?>" class="btn btn-orange">Admin Login</a>
         </div>
     </div>
@@ -99,7 +98,7 @@ $softwareSchema = [
                         Update dishes, prices, promos, and guest-facing content quickly without rebuilding the whole menu every time.
                     </p>
                     <div class="mb-4 d-flex flex-col sm:flex-row gap-2">
-                        <a href="#contact" class="btn btn-lg btn-orange">Request Demo</a>
+                        <a href="<?= site_url('register') ?>" class="btn btn-lg btn-orange">Create new menu</a>
                         <a href="#apps" class="btn btn-lg btn-default border-orange">Download apps</a>
                     </div>
                 </main>
@@ -210,42 +209,26 @@ $softwareSchema = [
 </section>
 
 
-
-<section class="pt-10 pb-16" id="contact">
+<section class="pt-10 pb-16 d-none" id="purchase">
     <div class="container">
         <div class="row">
             <div class="md:col-6 mx-auto">
                 <article class="card shadow-lg bg-neutral-100 border-orange border-width-3 md:p-8 p-4 rounded-lg">
-                    <h2 class="mb-3 text-2xl lg:text-3xl">Request a CafeMenu demo</h2>
-                    <p class="mb-5 text-secondary">Tell us about your cafe, restaurant, or bar, and we will get back to you with a demo and implementation guidance.</p>
-                    <form action="https://api.web3forms.com/submit" method="POST">
-                        <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
-                        <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
-                        <input type="hidden" name="subject" value="Cafemenu Message from Website">
+                    <h2 class="mb-2 text-2xl text-center lg:text-3xl">One-time license for lifetime use</h2>
+                    <p class="mb-5 text-green text-center text-lg">Try FREE demo, No credit card required.</p>
+                    
+                    <a href="#" target="_blank" class="btn btn-lg btn-orange w-full">Buy license • 190 USD ↗ </a>
+                    <p class="text-center text-sm mt-4 text-secondary"> 🔒 Secure purchase va Gumroad.com</p>
+                    
+                    <hr>
 
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Cafe name</label>
-                            <input name="cafe" required type="text" class="form-control text-lg" placeholder="Brand or venue name">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Your phone number</label>
-                            <input name="phone" required type="tel" class="form-control text-lg" value="+1">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label font-medium">Your E-mail</label>
-                            <input name="email" required type="email" class="form-control text-lg">
-                        </div>
-                        <div class="text-secondary">
-                            We will get back to you within 1-2 hours
-                        </div>
-                        <div class="mt-5 gap-2 d-flex">
-                            <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Send Request</button>
-                        </div>
-                    </form>
+                    <div class="d-grid grid-template-cols-2 gap-2">
+                        <a href="<?= site_url('login') ?>" class="btn btn-default">Log in as admin</a>
+                        <a href="<?= site_url('register') ?>" class="btn btn-default">Try for free </a>
+                    </div>
 
                     <hr>
-                    <p class="text-muted text-center mb-4">OR</p>
-                    <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">Message on Telegram</a>
+                    <p class="text-center">Need help? <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer">💬 Chat via Telegram</a></p>
                 </article>
             </div>
         </div>
@@ -335,9 +318,9 @@ $softwareSchema = [
     </div>
 </footer>
 
-<dialog class="dialog mt-8" id="form_request">
+<dialog class="dialog mt-8" id="dialog_support">
     <header class="dialog-header">
-        <h5>Request Demo</h5>
+        <h5>Contact support</h5>
         <button class="btn btn-icon" onclick="close_dialog(this)">
             <svg viewBox="0 0 24 24" width="24" height="24" color="currentColor" fill="none">
                 <path d="M19.0005 4.99988L5.00049 18.9999M5.00049 4.99988L19.0005 18.9999" stroke="currentColor" stroke-width="2"></path>
@@ -345,26 +328,36 @@ $softwareSchema = [
         </button>
     </header>
     <div class="dialog-body">
-        <form action="https://api.web3forms.com/submit" method="POST">
-            <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
-            <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
-            <input type="hidden" name="subject" value="Cafemenu Message from Website">
+        <article>
+            <form action="https://api.web3forms.com/submit" method="POST">
+                <input type="hidden" name="access_key" value="df365b70-5ae9-4729-a504-ef3cba73313a">
+                <input type="hidden" name="redirect" value="<?= base_url(); ?>thankyou">
+                <input type="hidden" name="subject" value="Cafemenu Message from Website">
 
-            <div class="mb-4">
-                <label class="form-label font-medium">Cafe name</label>
-                <input name="cafe" required type="text" class="form-control text-lg" placeholder="Brand or venue name">
-            </div>
-            <div class="mb-4">
-                <label class="form-label font-medium">Your phone number</label>
-                <input name="phone" required type="tel" class="form-control text-lg" value="+998">
-            </div>
-            <div class="text-secondary">
-                We will get back to you within 1-2 hours
-            </div>
-            <div class="mt-5 gap-2 d-flex">
-                <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Send Request</button>
-            </div>
-        </form>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Cafe name</label>
+                    <input name="cafe" required type="text" class="form-control text-lg" placeholder="Brand or venue name">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Your phone number</label>
+                    <input name="phone" required type="tel" class="form-control text-lg" value="+1">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label font-medium">Your E-mail</label>
+                    <input name="email" required type="email" class="form-control text-lg">
+                </div>
+                <div class="text-secondary">
+                    We will get back to you within 1-2 hours
+                </div>
+                <div class="mt-5 gap-2 d-flex">
+                    <button type="submit" class="btn flex-1 btn-primary bg-dark btn-lg w-full">Send Request</button>
+                </div>
+            </form>
+
+            <hr>
+            <p class="text-muted text-center mb-4">OR</p>
+            <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">💬 Message via Telegram</a>
+        </article>
     </div>
 </dialog>
 

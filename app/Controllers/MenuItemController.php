@@ -217,8 +217,7 @@ class MenuItemController extends BaseController
 
         $this->cafeService->touchMenuUpdatedAt($cafeId);
 
-        return redirect()->to(site_url('admin'))
-            ->with('success', $this->adminTexts->translate($id === null ? 'item_created' : 'item_updated'));
+        return redirect()->to(site_url('admin'));
     }
 
     private function collectTranslations(): array

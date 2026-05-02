@@ -76,7 +76,7 @@
 
         function setStatus(message, isError) {
             status.textContent = message || '';
-            status.classList.toggle('is-hidden', message === '');
+            status.classList.toggle('d-none', message === '');
             status.classList.toggle('is-error', Boolean(isError));
         }
 
@@ -89,7 +89,7 @@
                 return;
             }
 
-            currentImage.classList.toggle('is-hidden', hasSelectedFile());
+            currentImage.classList.toggle('d-none', hasSelectedFile());
         }
 
         function showPreviewFile(file) {
@@ -97,13 +97,13 @@
 
             if (!file || !isRasterFile(file)) {
                 previewImage.removeAttribute('src');
-                previewShell.classList.add('is-hidden');
+                previewShell.classList.add('d-none');
                 return;
             }
 
             previewUrl = URL.createObjectURL(file);
             previewImage.src = previewUrl;
-            previewShell.classList.remove('is-hidden');
+            previewShell.classList.remove('d-none');
         }
 
         function syncUiWithSelection(previewFile) {
