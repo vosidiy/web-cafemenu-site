@@ -187,6 +187,11 @@ Controllers are thin request handlers.
   - Falls back to English when a key is missing from the selected language override.
   - Provides translated flash/error text for controllers and services in addition to view labels.
 
+- `PublicUiTextCatalogService`
+  - Exposes the fixed public-menu UI text catalog keyed by language code.
+  - Returns only the enabled cafe languages for the JSON `ui_translations` payload.
+  - Supports English fallback labels for the public shell.
+
 - `CafeLanguageService`
   - Exposes the fixed language catalog.
   - Validates cafe language selection.
@@ -278,6 +283,7 @@ The app does not currently use CodeIgniter migrations for schema management.
 - `categories`
 - `menu_items`
 - `cafe_languages`
+- `cafe_fee_translations`
 - `category_translations`
 - `menu_item_translations`
 
@@ -389,6 +395,23 @@ Behavior:
 - One row per `(category_id, language_code)`.
 - Deleted automatically when the parent category is deleted.
 
+#### `cafe_fee_translations`
+
+Stores localized extra-fee labels for a cafe.
+
+Important fields:
+
+- `id`
+- `cafe_id`
+- `language_code`
+- `label`
+
+Behavior:
+
+- One row per `(cafe_id, language_code)`.
+- Used for the public `cafe.extra_fee.translations` payload.
+- Deleted automatically when the parent cafe is deleted.
+
 #### `menu_item_translations`
 
 Stores localized menu item names and descriptions.
@@ -412,6 +435,7 @@ Behavior:
 - `menu_items.cafe_id` -> `cafes.id` with `ON DELETE CASCADE`
 - `menu_items.category_id` -> `categories.id` with `ON DELETE SET NULL`
 - `cafe_languages.cafe_id` -> `cafes.id` with `ON DELETE CASCADE`
+- `cafe_fee_translations.cafe_id` -> `cafes.id` with `ON DELETE CASCADE`
 - `category_translations.category_id` -> `categories.id` with `ON DELETE CASCADE`
 - `menu_item_translations.menu_item_id` -> `menu_items.id` with `ON DELETE CASCADE`
 
@@ -452,48 +476,78 @@ Response shape:
         "code": "en",
         "label": "English",
         "native_label": "English",
-        "dir": "ltr"
+        "dir": "ltr",
+        "flag": "🇬🇧",
+        "locale": "en-GB"
       },
       {
-        "code": "ru",
-        "label": "Russian",
-        "native_label": "Русский",
-        "dir": "ltr"
-      },
-      {
-        "code": "ar",
-        "label": "Arabic",
-        "native_label": "العربية",
-        "dir": "rtl"
+        "code": "uz",
+        "label": "Uzbek",
+        "native_label": "O'zbekcha",
+        "dir": "ltr",
+        "flag": "🇺🇿",
+        "locale": "uz-UZ"
       }
     ]
   },
   "cafe": {
     "name": "Best Cafe",
+    "status": "active",
     "slogan": "Fresh coffee every day",
     "logo_url": "http://example.com/uploads/bestcafe/logo.jpg",
     "currency": "UZS",
     "theme_style": "theme2",
     "address": "Navoi street 12",
-    "location_url": "https://maps.google.com/?q=41.55,60.63"
+    "location_url": "https://maps.google.com/?q=41.55,60.63",
+    "activation_url": "https://t.me/cafemenu_uz?start=pay",
+    "extra_fee": {
+      "enabled": true,
+      "type": "percent",
+      "value": 5,
+      "translations": {
+        "en": {
+          "label": "Service fee"
+        },
+        "uz": {
+          "label": "Xizmat haqi"
+        }
+      }
+    }
   },
+  "public_status": "active",
   "categories": [
     {
       "id": 1,
       "sort_order": 1,
+      "icon_url": "http://example.com/uploads/bestcafe/drinks.svg",
       "translations": {
         "en": {
           "name": "Drinks"
         },
-        "ru": {
-          "name": "Напитки"
-        },
-        "ar": {
-          "name": "المشروبات"
+        "uz": {
+          "name": "Ichimliklar"
         }
       }
     }
   ],
+  "ui_translations": {
+    "en": {
+      "menu_language_label": "Menu language",
+      "updated_at": "Updated",
+      "all_items": "All items",
+      "cart_bar_selected_count": "Selected items: {count}",
+      "extra_fee_default_label": "Extra fee",
+      "uncategorized": "Others"
+    },
+    "uz": {
+      "menu_language_label": "Menyu tili",
+      "updated_at": "Yangilandi",
+      "all_items": "Barcha taomlar",
+      "cart_bar_selected_count": "Tanlanganlar: {count}",
+      "extra_fee_default_label": "Qo'shimcha to'lov",
+      "uncategorized": "Boshqalar"
+    }
+  },
   "items": [
     {
       "id": 11,
@@ -507,13 +561,9 @@ Response shape:
           "name": "Cappuccino",
           "description": "Hot coffee"
         },
-        "ru": {
-          "name": "Капучино",
-          "description": "Горячий кофе"
-        },
-        "ar": {
-          "name": "كابتشينو",
-          "description": "قهوة ساخنة"
+        "uz": {
+          "name": "Kapuchino",
+          "description": "Issiq qahva"
         }
       }
     }
@@ -526,6 +576,9 @@ Notes:
 - Scalar `categories[].name`, `items[].name`, and `items[].description` are no longer emitted.
 - Clients must resolve visible text from `translations`, using `meta.default_language` as fallback.
 - `meta.languages` is ordered by cafe language `sort_order`.
+- `meta.languages` entries currently include `code`, `label`, `native_label`, `dir`, `flag`, and `locale`.
+- `ui_translations` contains public-shell labels for the same enabled cafe languages.
+- Clients resolve UI labels from `ui_translations` using selected language, then `meta.default_language`, then English fallback.
 - `dir` is included so clients can switch content direction for RTL languages like Arabic.
 - `meta.version` is not emitted.
 
@@ -598,6 +651,8 @@ The public shell depends on:
 - `public/vue.global.js`
 - `public/placeholder.png`
 
+At runtime, the shell injects an English fallback UI-text bundle before the JSON fetch completes. After fetch, `public/app.js` merges that fallback with `ui_translations` from the menu JSON and resolves labels by selected language, then cafe default language, then English.
+
 The shell also loads Fancybox from a CDN for image lightbox behavior.
 
 ## Testing
@@ -616,7 +671,6 @@ The repository also contains baseline example tests generated by the framework i
 
 ## Known Caveats / Current Mismatches
 
-- `README.md` is partly a spec/history document and does not fully match the current implementation details.
 - `/{username}/menu` is a JSON alias, even though the product concept suggests it could be a user-facing menu page.
 - `app/Views/home_ru.php` is routed as the Russian landing page, but most visible content is still Uzbek.
 - Required filters in `app/Config/Filters.php` enable page cache globally. This is an operational concern because it affects all routes unless changed in configuration.

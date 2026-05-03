@@ -6,8 +6,8 @@
     <title><?= esc(admin_ui($title ?? 'admin_panel_title')) ?></title>
     <link href="<?= base_url('final.min.css') ?>" rel="stylesheet">
 
-    <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
 
     <?= $this->renderSection('head') ?>
 </head>

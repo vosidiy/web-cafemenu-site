@@ -66,6 +66,7 @@ Important routing note:
 - Categories and menu items belong to a cafe through `cafe_id`.
 - Each cafe enables `1..3` menu languages through `cafe_languages`.
 - Newly registered cafes start with English (`en`) as the default menu language.
+- Public JSON includes translated menu content plus a `ui_translations` object for those enabled menu languages.
 - Newly registered cafes start with status `demo`.
 - `Config\App::$activationUrl` is the global activation/payment link used across admin, public pages, and JSON.
 - Cafe status now supports `active`, `demo`, and `inactive`.
@@ -139,44 +140,70 @@ Current response shape:
         "code": "en",
         "label": "English",
         "native_label": "English",
-        "dir": "ltr"
+        "dir": "ltr",
+        "flag": "🇬🇧",
+        "locale": "en-GB"
       },
       {
-        "code": "ru",
-        "label": "Russian",
-        "native_label": "Русский",
-        "dir": "ltr"
+        "code": "uz",
+        "label": "Uzbek",
+        "native_label": "O'zbekcha",
+        "dir": "ltr",
+        "flag": "🇺🇿",
+        "locale": "uz-UZ"
       }
     ]
   },
   "cafe": {
     "name": "Best Cafe",
+    "status": "active",
     "slogan": "Fresh coffee every day",
     "logo_url": "http://example.com/uploads/bestcafe/logo.jpg",
     "currency": "UZS",
     "theme_style": "theme2",
     "address": "Navoi street 12",
     "location_url": "https://maps.google.com/?q=41.55,60.63",
+    "activation_url": "https://t.me/cafemenu_uz?start=pay",
     "extra_fee": {
       "enabled": true,
       "type": "percent",
       "value": 5,
       "translations": {
         "en": { "label": "Service fee" },
-        "ru": { "label": "Сервисный сбор" }
+        "uz": { "label": "Xizmat haqi" }
       }
     }
   },
+  "public_status": "active",
   "categories": [
     {
       "id": 1,
       "sort_order": 1,
+      "icon_url": "http://example.com/uploads/bestcafe/drinks.svg",
       "translations": {
         "en": { "name": "Drinks" },
-        "ru": { "name": "Напитки" }
+        "uz": { "name": "Ichimliklar" }
       }
     }
   ],
+  "ui_translations": {
+    "en": {
+      "menu_language_label": "Menu language",
+      "updated_at": "Updated",
+      "all_items": "All items",
+      "cart_bar_selected_count": "Selected items: {count}",
+      "extra_fee_default_label": "Extra fee",
+      "uncategorized": "Others"
+    },
+    "uz": {
+      "menu_language_label": "Menyu tili",
+      "updated_at": "Yangilandi",
+      "all_items": "Barcha taomlar",
+      "cart_bar_selected_count": "Tanlanganlar: {count}",
+      "extra_fee_default_label": "Qo'shimcha to'lov",
+      "uncategorized": "Boshqalar"
+    }
+  },
   "items": [
     {
       "id": 11,
@@ -187,7 +214,7 @@ Current response shape:
       "sort_order": 1,
       "translations": {
         "en": { "name": "Cappuccino", "description": "Hot coffee" },
-        "ru": { "name": "Капучино", "description": "Горячий кофе" }
+        "uz": { "name": "Kapuchino", "description": "Issiq qahva" }
       }
     }
   ]
@@ -199,6 +226,9 @@ Current public filtering rules:
 - Cafe status controls the response:
   - `active` and `demo` return the public menu.
   - `inactive` returns the same envelope with `public_status: "inactive"`, `cafe.status: "inactive"`, `cafe.activation_url` from `Config\App::$activationUrl`, and empty `categories` / `items`.
+- `meta.languages`, `ui_translations`, category/item `translations`, and extra-fee `translations` are scoped to the cafe's enabled menu languages.
+- Clients should resolve category/item text from each record's `translations` object using `meta.default_language` as fallback.
+- Clients should resolve shell labels from `ui_translations` using selected language, then `meta.default_language`, then English fallback.
 - Categories must be active to appear in the public `categories` array.
 - Items must have `is_available = 1`.
 - Uncategorized items are allowed.
@@ -268,6 +298,7 @@ Current behavior:
 - Vue fetches `/{username}/menu.json`
 - Vue stores the selected menu language in localStorage per cafe
 - Vue switches category and item text client-side with fallback to the cafe default language
+- Vue switches shell labels client-side from `ui_translations`
 - Menu items are grouped by category in the client
 - The UI includes a local client-side selection cart with an optional per-cafe extra fee
 - Fancybox is loaded from CDN for image previews
