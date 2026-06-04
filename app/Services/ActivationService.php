@@ -2,11 +2,25 @@
 
 namespace App\Services;
 
+use App\Models\AdminModel;
+use Throwable;
+
 class ActivationService
 {
+    public function __construct(
+        private readonly AdminModel $admins = new AdminModel(),
+    ) {
+    }
+
     public function getActivationUrl(): string
     {
-        $activationUrl = (string) (config('App')->activationUrl ?? '#');
+        try {
+            $admin = $this->admins->getSingleton();
+        } catch (Throwable) {
+            return '#';
+        }
+
+        $activationUrl = trim((string) ($admin['activation_url'] ?? ''));
 
         return $activationUrl !== '' ? $activationUrl : '#';
     }

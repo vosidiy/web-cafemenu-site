@@ -40,6 +40,7 @@
                 <li><a class="nav-link" href="<?= site_url('admin/categories') ?>"><?= esc(admin_ui('nav_categories')) ?></a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/menu-items') ?>"><?= esc(admin_ui('nav_menu_items')) ?></a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/settings') ?>"><?= esc(admin_ui('nav_settings')) ?></a></li>
+                <li><a class="nav-link" href="https://www.qrcode-monkey.com/" target="_blank"> QR link ↗ </a></li>
                 <?php if (session('username')): ?>
                 <li><a class="nav-link" href="<?= site_url(session('username')) ?>" target="_blank"><?= esc(admin_ui('open_menu')) ?> ↗</a></li>
                 <?php endif; ?>
@@ -85,7 +86,11 @@
                 ? 'Cafe is in demo mode. 7 Days free trial.'
                 : 'Cafe is deactivated. Activate it to restore access.') ?>
         </p>
-        <a target="_blank" href="<?= esc($activationUrl ?? '#') ?>" class="btn btn-sm btn-orange md:ml-auto">Activate now</a>
+        <div class="d-flex gap-2 md:ml-auto">
+            <a target="_blank" href="<?= esc($adminContactUrl ?? '#') ?>" class="btn btn-sm btn-neutral">💬 Support</a>
+            <a target="_blank" href="<?= esc($activationUrl ?? '#') ?>" class="btn btn-sm btn-orange">Activate now</a>
+        </div>
+        
     </div>
 <?php endif; ?>
 

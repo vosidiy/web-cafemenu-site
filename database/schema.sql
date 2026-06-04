@@ -1,6 +1,31 @@
 -- Cafe Menu SaaS schema
 -- Source of truth for manual SQL-based database setup.
 
+CREATE TABLE `admin` (
+  `id` tinyint UNSIGNED NOT NULL DEFAULT 1,
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `contact_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `social_page_link` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app_link_store_normal` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app_link_store_kiosk` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app_link_local_normal` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `app_link_local_kiosk` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `activation_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uniq_admin_username` (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `admin` (`id`, `username`, `password_hash`, `activation_url`)
+VALUES (
+  1,
+  'vosidiy',
+  '$2y$12$PdZp7hMuTvP1M473ebjq3uYT8yRsm2o69DuG8MG.Dvi8.vfXQf4Re',
+  'http://t.me/cafemenu_uz?direct'
+);
+
 CREATE TABLE `cafes` (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `code` char(6) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

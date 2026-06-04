@@ -49,6 +49,24 @@ Authenticated routes guarded by `adminauth`:
 - Category CRUD under `/admin/categories`
 - Menu item CRUD under `/admin/menu-items`
 
+### Superadmin surface
+
+Superadmin routes are separate from the cafe-owner admin:
+
+- `GET /superadmin/login`
+- `POST /superadmin/login`
+- `GET /superadmin/logout`
+- `GET /superadmin`
+- `GET /superadmin/settings`
+- `POST /superadmin/settings`
+- `GET /superadmin/account`
+- `POST /superadmin/account`
+- `GET /superadmin/cafes/{id}/edit`
+- `POST /superadmin/cafes/{id}`
+- `POST /superadmin/cafes/{id}/password`
+
+Protected superadmin routes are guarded by `superadminauth`.
+
 ### Public tenant surface
 
 Each cafe is published under `/{username}`.
@@ -65,7 +83,7 @@ Routes are defined in `app/Config/Routes.php`. Auto-routing is disabled in `app/
 Route ordering matters:
 
 1. Marketing routes are declared first.
-2. Top-level auth routes and `/admin` routes are declared next.
+2. Top-level auth routes, `/superadmin` routes, and `/admin` routes are declared next.
 3. Code-based and tenant JSON routes are declared next.
 4. The final catch-all route is `GET /(:segment)` -> `PublicController::index/$1`.
 
@@ -105,6 +123,10 @@ Login flow:
 6. Redirect to `/admin`.
 
 Protected admin routes use `AdminAuthFilter`, which redirects unauthenticated users to `/login`.
+
+### Superadmin flow
+
+Superadmin login is handled by `SuperAdminController` against the singleton `admin` row. Successful login regenerates the session and stores `superadmin_id` and `superadmin_username`. Superadmin pages can list all cafes, edit selected basic cafe fields, change a cafe password, update global links/settings, and change the superadmin username/password after confirming the current password.
 
 ### Admin CRUD flow
 
@@ -158,6 +180,7 @@ Controllers are thin request handlers.
 - `MenuItemController` manages menu item CRUD and image uploads for the current cafe.
 - `MenuJsonController` returns the normalized public JSON payload.
 - `PublicController` renders the tenant menu shell.
+- `SuperAdminController` handles platform-admin login, all-cafe listing, cafe basic edits, cafe password updates, global settings, and superadmin account updates.
 
 ### Services
 
@@ -168,14 +191,15 @@ Controllers are thin request handlers.
   - Updates `menu_updated_at`.
 
 - `ActivationService`
-  - Resolves the centralized activation URL from application config.
+  - Resolves the centralized activation URL from the singleton `admin` row.
+  - Returns `#` when the admin table is missing or the stored value is blank.
   - Decides whether the shared admin activation banner should render for the current cafe.
 
 - `MenuBuilderService`
   - Resolves a cafe by username or pairing code.
   - Resolves enabled cafe languages and default language.
   - Fetches active categories and public menu items only when cafe status is `active` or `demo`.
-  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale`, top-level `ui_translations`, `public_status`, and config-backed `cafe.activation_url`.
+  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale`, top-level `ui_translations`, `public_status`, and database-backed `cafe.activation_url`.
 
 - `AdminLanguageService`
   - Resolves the admin UI language from session, cookie, browser `Accept-Language`, then English fallback.
@@ -211,6 +235,9 @@ Controllers are thin request handlers.
 
 ### Models
 
+- `AdminModel`
+  - Encapsulates the singleton `admin` table row used for superadmin credentials and global links/settings.
+
 - `CafeModel`
   - Encapsulates the `cafes` table.
   - Provides general cafe lookup by username/code plus `findRecentActive()`.
@@ -237,6 +264,10 @@ Controllers are thin request handlers.
 - `AdminAuthFilter`
   - Allows requests only when session contains `cafe_id`.
   - Redirects guests to `/login`.
+
+- `SuperAdminAuthFilter`
+  - Allows requests only when session contains `superadmin_id`.
+  - Redirects guests to `/superadmin/login`.
 
 - `MenuJsonThrottleFilter`
   - Applies to `/{username}/menu.json`, `/{username}/menu`, and `/code/{6-digit-code}`.
@@ -279,6 +310,7 @@ The app does not currently use CodeIgniter migrations for schema management.
 
 ### Tables
 
+- `admin`
 - `cafes`
 - `categories`
 - `menu_items`
@@ -286,6 +318,29 @@ The app does not currently use CodeIgniter migrations for schema management.
 - `cafe_fee_translations`
 - `category_translations`
 - `menu_item_translations`
+
+#### `admin`
+
+Singleton platform settings and superadmin account table.
+
+Important fields:
+
+- `id`
+- `username`
+- `password_hash`
+- `contact_url`
+- `social_page_link`
+- `app_link_store_normal`
+- `app_link_store_kiosk`
+- `app_link_local_normal`
+- `app_link_local_kiosk`
+- `activation_url`
+
+Behavior:
+
+- Uses row `id = 1`.
+- `activation_url` is shown in admin banners, public HTML notices, and public JSON.
+- Superadmin password is stored with `password_hash()`.
 
 #### `cafes`
 
@@ -317,7 +372,7 @@ Behavior:
 - `code` is nullable and unique when present.
 - `status` controls public visibility and login eligibility.
 - `status` supports `active`, `demo`, and `inactive`.
-- `Config\App::$activationUrl` is the single source of truth for activation/payment links shown in admin, public HTML, and public JSON.
+- `admin.activation_url` is the single source of truth for activation/payment links shown in admin, public HTML, and public JSON.
 - `menu_updated_at` is the menu freshness field for public consumers.
 
 #### `categories`
@@ -587,7 +642,7 @@ Notes:
 Public output is intentionally narrower than admin output:
 
 - `active` and `demo` cafes return the public menu payload.
-- `inactive` cafes return the same envelope with `public_status = inactive`, `cafe.status = inactive`, `cafe.activation_url` from application config, and empty `categories` / `items`.
+- `inactive` cafes return the same envelope with `public_status = inactive`, `cafe.status = inactive`, `cafe.activation_url` from `admin.activation_url`, and empty `categories` / `items`.
 - Categories must be active to appear in `categories`.
 - Items must have `is_available = 1`.
 - Uncategorized items are allowed when `category_id` is `NULL`.

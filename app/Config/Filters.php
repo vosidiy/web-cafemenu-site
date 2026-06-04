@@ -14,6 +14,7 @@ use CodeIgniter\Filters\PerformanceMetrics;
 use CodeIgniter\Filters\SecureHeaders;
 use App\Filters\AdminAuthFilter;
 use App\Filters\MenuJsonThrottleFilter;
+use App\Filters\SuperAdminAuthFilter;
 
 class Filters extends BaseFilters
 {
@@ -38,6 +39,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'adminauth'     => AdminAuthFilter::class,
         'menuthrottle'  => MenuJsonThrottleFilter::class,
+        'superadminauth' => SuperAdminAuthFilter::class,
     ];
 
     /**

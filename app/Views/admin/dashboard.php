@@ -148,7 +148,7 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
 </div>
 
 <p class="text-secondary p-2 my-4 text-center">
-    <?= esc(admin_ui('created_by')) ?> <a target="_blank" href="<?= base_url() ?>"><?= base_url() ?></a>
+    <?= esc(admin_ui('created_by')) ?> <a target="_blank" href="<?= base_url() ?>"><?= base_url() ?></a> | <a href="<?= esc($adminContactUrl ?? '#') ?>" target="_blank" rel="noopener noreferrer">Get help</a>
 </p>
 
 <script>

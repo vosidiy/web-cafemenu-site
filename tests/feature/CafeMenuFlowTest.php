@@ -15,13 +15,10 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     use FeatureTestTrait;
 
     private static bool $schemaReady = false;
-    private string $originalActivationUrl;
 
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->originalActivationUrl = (string) config('App')->activationUrl;
 
         $db = Database::connect('tests');
 
@@ -30,6 +27,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
             self::$schemaReady = true;
         }
 
+        $db->table('admin')->emptyTable();
         $db->table('cafe_fee_translations')->emptyTable();
         $db->table('menu_item_translations')->emptyTable();
         $db->table('category_translations')->emptyTable();
@@ -37,13 +35,8 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $db->table('menu_items')->emptyTable();
         $db->table('categories')->emptyTable();
         $db->table('cafes')->emptyTable();
-    }
 
-    protected function tearDown(): void
-    {
-        config('App')->activationUrl = $this->originalActivationUrl;
-
-        parent::tearDown();
+        $this->seedSuperAdmin($db);
     }
 
     public function testProtectedAdminRouteRedirectsGuests(): void
@@ -52,6 +45,353 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $result->assertRedirect();
         $result->assertRedirectTo('login');
+    }
+
+    public function testProtectedSuperAdminRouteRedirectsGuests(): void
+    {
+        $result = $this->get('superadmin');
+
+        $result->assertRedirect();
+        $result->assertRedirectTo('superadmin/login');
+    }
+
+    public function testSuperAdminLoginAcceptsSeededCredentials(): void
+    {
+        $result = $this->post('superadmin/login', [
+            'username' => 'vosidiy',
+            'password' => '123',
+        ]);
+
+        $result->assertRedirect();
+        $result->assertRedirectTo('superadmin');
+        $result->assertSessionHas('superadmin_id');
+        $result->assertSessionHas('superadmin_username', 'vosidiy');
+    }
+
+    public function testSuperAdminLoginRejectsInvalidCredentials(): void
+    {
+        $result = $this->post('superadmin/login', [
+            'username' => 'vosidiy',
+            'password' => 'wrong',
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('error');
+    }
+
+    public function testSuperAdminCafeListRendersAllCafeDataAndLogoImage(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'bestcafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Best Cafe',
+            'slogan'          => 'Fresh coffee every day',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'logo_path'       => 'uploads/bestcafe/logo.png',
+            'currency_name'   => 'UZS',
+            'theme_style'     => 'theme2',
+            'address_text'    => 'Navoi street 12',
+            'location_url'    => 'https://maps.google.com/?q=41.55,60.63',
+            'extra_fee_enabled' => 1,
+            'extra_fee_type'  => 'percent',
+            'extra_fee_value' => 5,
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'active',
+            'created_at'      => '2026-04-02 14:30:00',
+            'updated_at'      => '2026-04-02 14:30:00',
+        ]);
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->get('superadmin');
+
+        $result->assertStatus(200);
+        $result->assertSee('Best Cafe');
+        $result->assertSee('Fresh coffee every day');
+        $result->assertDontSee('password_hash');
+        $result->assertSee('uploads/bestcafe/logo.png');
+        $result->assertSee('http://example.com/uploads/bestcafe/logo.png');
+        $result->assertSee('superadmin/cafes/1/edit');
+    }
+
+    public function testLandingPagesRenderSuperAdminSettingsLinks(): void
+    {
+        $db = Database::connect('tests');
+        $this->setLandingLinks($db, [
+            'contact_url'           => 'https://contact.example.com/message',
+            'social_page_link'      => 'https://social.example.com/cafemenu',
+            'app_link_store_normal' => 'https://play.example.com/normal',
+            'app_link_store_kiosk'  => 'https://play.example.com/kiosk',
+            'app_link_local_normal' => 'https://downloads.example.com/normal.apk',
+            'app_link_local_kiosk'  => 'https://downloads.example.com/kiosk.apk',
+            'activation_url'        => 'https://pay.example.com/license',
+        ]);
+
+        $english = $this->get('/');
+
+        $english->assertStatus(200);
+        $english->assertSee('https://pay.example.com/license');
+        $english->assertSee('https://contact.example.com/message');
+        $english->assertSee('https://social.example.com/cafemenu');
+        $english->assertSee('https://play.example.com/normal');
+        $english->assertSee('https://play.example.com/kiosk');
+        $english->assertSee('https://downloads.example.com/normal.apk');
+        $english->assertSee('https://downloads.example.com/kiosk.apk');
+        $english->assertDontSee('{{ Contact URL or messenger link }}');
+
+        $russian = $this->get('ru');
+
+        $russian->assertStatus(200);
+        $russian->assertSee('https://pay.example.com/license');
+        $russian->assertSee('https://contact.example.com/message');
+        $russian->assertSee('https://social.example.com/cafemenu');
+        $russian->assertSee('https://play.example.com/normal');
+        $russian->assertSee('https://play.example.com/kiosk');
+        $russian->assertSee('https://downloads.example.com/normal.apk');
+        $russian->assertSee('https://downloads.example.com/kiosk.apk');
+        $russian->assertDontSee('{{ Contact URL or messenger link }}');
+    }
+
+    public function testThankYouPageRendersSuperAdminContactUrl(): void
+    {
+        $db = Database::connect('tests');
+        $this->setLandingLinks($db, [
+            'contact_url' => 'https://contact.example.com/thanks',
+        ]);
+
+        $result = $this->get('thankyou');
+
+        $result->assertStatus(200);
+        $result->assertSee('https://contact.example.com/thanks');
+        $result->assertDontSee('{{ Contact URL or messenger link }}');
+    }
+
+    public function testLandingPagesUseHashFallbackWhenAdminSettingsAreMissing(): void
+    {
+        $db = Database::connect('tests');
+        $db->table('admin')->emptyTable();
+
+        $english = $this->get('/');
+        $russian = $this->get('ru');
+        $thankYou = $this->get('thankyou');
+
+        $english->assertStatus(200);
+        $english->assertSee('href="#"');
+        $russian->assertStatus(200);
+        $russian->assertSee('href="#"');
+        $thankYou->assertStatus(200);
+        $thankYou->assertSee('href="#"');
+    }
+
+    public function testSuperAdminCanUpdateCafeBasicDataAndTouchMenuTimestamp(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'bestcafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Best Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'currency_name'   => 'UZS',
+            'theme_style'     => 'theme1',
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'demo',
+        ]);
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/cafes/1', [
+            'code'          => '654321',
+            'username'      => ' New Cafe ',
+            'phone'         => '+998907770011',
+            'person_name'   => 'Vali',
+            'cafe_name'     => 'New Cafe Name',
+            'slogan'        => 'Updated slogan',
+            'currency_name' => 'USD',
+            'status'        => 'inactive',
+        ]);
+
+        $result->assertRedirectTo('superadmin/cafes/1/edit');
+
+        $row = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('654321', $row['code']);
+        $this->assertSame('newcafe', $row['username']);
+        $this->assertSame('+998907770011', $row['phone']);
+        $this->assertSame('Vali', $row['person_name']);
+        $this->assertSame('New Cafe Name', $row['cafe_name']);
+        $this->assertSame('Updated slogan', $row['slogan']);
+        $this->assertSame('USD', $row['currency_name']);
+        $this->assertSame('inactive', $row['status']);
+        $this->assertNotSame('2026-04-02 14:30:00', $row['menu_updated_at']);
+    }
+
+    public function testSuperAdminCafeBasicUpdateRejectsDuplicateCode(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insertBatch([
+            [
+                'id'            => 1,
+                'code'          => '123456',
+                'username'      => 'bestcafe',
+                'phone'         => '+998901234567',
+                'person_name'   => 'Ali',
+                'cafe_name'     => 'Best Cafe',
+                'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+                'status'        => 'demo',
+            ],
+            [
+                'id'            => 2,
+                'code'          => '654321',
+                'username'      => 'othercafe',
+                'phone'         => '+998907770011',
+                'person_name'   => 'Vali',
+                'cafe_name'     => 'Other Cafe',
+                'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+                'status'        => 'active',
+            ],
+        ]);
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/cafes/1', [
+            'code'          => '654321',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'slogan'        => '',
+            'currency_name' => 'UZS',
+            'status'        => 'demo',
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('errors');
+
+        $row = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('123456', $row['code']);
+    }
+
+    public function testSuperAdminCanUpdateCafePasswordWithoutChangingBasicData(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'code'          => '123456',
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/cafes/1/password', [
+            'new_password'     => 'secret456',
+            'password_confirm' => 'secret456',
+        ]);
+
+        $result->assertRedirectTo('superadmin/cafes/1/edit');
+
+        $row = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('bestcafe', $row['username']);
+        $this->assertSame('Best Cafe', $row['cafe_name']);
+        $this->assertTrue(password_verify('secret456', $row['password_hash']));
+    }
+
+    public function testSuperAdminSettingsUpdateChangesActivationUrlUsedByPublicJson(): void
+    {
+        $db = Database::connect('tests');
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/settings', [
+            'contact_url'           => 'https://t.me/cafemenu_support',
+            'social_page_link'      => 'https://instagram.com/cafemenu',
+            'app_link_store_normal' => 'https://play.google.com/store/apps/details?id=normal',
+            'app_link_store_kiosk'  => 'https://play.google.com/store/apps/details?id=kiosk',
+            'app_link_local_normal' => 'filemanager://normal.apk',
+            'app_link_local_kiosk'  => 'filemanager://kiosk.apk',
+            'activation_url'        => 'https://pay.example.com/from-superadmin',
+        ]);
+
+        $result->assertRedirectTo('superadmin/settings');
+
+        $admin = $db->table('admin')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('https://pay.example.com/from-superadmin', $admin['activation_url']);
+
+        $db->table('cafes')->insert([
+            'id'              => 1,
+            'code'            => '123456',
+            'username'        => 'sleepycafe',
+            'phone'           => '+998901234567',
+            'person_name'     => 'Ali',
+            'cafe_name'       => 'Sleepy Cafe',
+            'password_hash'   => password_hash('secret123', PASSWORD_DEFAULT),
+            'menu_updated_at' => '2026-04-02 14:30:00',
+            'status'          => 'inactive',
+        ]);
+
+        $jsonResult = $this->get('sleepycafe/menu.json');
+        $payload = json_decode($jsonResult->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertSame('https://pay.example.com/from-superadmin', $payload['cafe']['activation_url']);
+    }
+
+    public function testSuperAdminAccountUpdateRequiresCurrentPasswordAndUpdatesSessionUsername(): void
+    {
+        $db = Database::connect('tests');
+
+        $failed = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/account', [
+            'username'         => 'boss',
+            'current_password' => 'wrong',
+            'new_password'     => '456',
+            'password_confirm' => '456',
+        ]);
+
+        $failed->assertRedirect();
+        $failed->assertSessionHas('error');
+
+        $result = $this->withSession([
+            'superadmin_id'       => 1,
+            'superadmin_username' => 'vosidiy',
+        ])->post('superadmin/account', [
+            'username'         => 'boss',
+            'current_password' => '123',
+            'new_password'     => '456',
+            'password_confirm' => '456',
+        ]);
+
+        $result->assertRedirectTo('superadmin/account');
+        $result->assertSessionHas('superadmin_username', 'boss');
+
+        $admin = $db->table('admin')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame('boss', $admin['username']);
+        $this->assertTrue(password_verify('456', $admin['password_hash']));
     }
 
     public function testRegistrationCreatesCafeAndEnglishDefaultLanguageAndRedirectsToDashboard(): void
@@ -408,7 +748,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     public function testDemoCafeMenuShellShowsActivationNotice(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'            => 1,
@@ -438,7 +778,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     public function testInactiveCafeSlugShowsActivationPage(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'            => 1,
@@ -461,7 +801,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     public function testInactiveCafeMenuJsonReturnsInactiveEnvelope(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'              => 1,
@@ -493,7 +833,10 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     public function testDemoCafeSeesAdminActivationBannerOnDashboard(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setLandingLinks($db, [
+            'activation_url' => 'https://pay.example.com/activate',
+            'contact_url'    => 'https://support.example.com/contact',
+        ]);
 
         $db->table('cafes')->insert([
             'id'            => 1,
@@ -511,14 +854,16 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         ])->get('admin');
 
         $result->assertStatus(200);
-        $result->assertSee('Cafe is in demo mode. Activate it to go live.');
+        $result->assertSee('Cafe is in demo mode. 7 Days free trial.');
         $result->assertSee('https://pay.example.com/activate');
+        $result->assertSee('https://support.example.com/contact');
+        $result->assertDontSee('{{ Contact URL or messenger link }}');
     }
 
     public function testInactiveCafeSeesAdminActivationBannerOnCategoriesPage(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'            => 1,
@@ -536,14 +881,14 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         ])->get('admin/categories');
 
         $result->assertStatus(200);
-        $result->assertSee('Cafe is deactivated. Activate it to restore public access.');
+        $result->assertSee('Cafe is deactivated. Activate it to restore access.');
         $result->assertSee('https://pay.example.com/activate');
     }
 
     public function testActiveCafeDoesNotSeeAdminActivationBanner(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'            => 1,
@@ -698,7 +1043,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     public function testMenuJsonCanBeFetchedByPairingCode(): void
     {
         $db = Database::connect('tests');
-        config('App')->activationUrl = 'https://pay.example.com/activate';
+        $this->setActivationUrl($db, 'https://pay.example.com/activate');
 
         $db->table('cafes')->insert([
             'id'              => 1,
@@ -1476,6 +1821,23 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     private function createSchema($db): void
     {
         $db->query('
+            CREATE TABLE IF NOT EXISTS admin (
+                id INTEGER PRIMARY KEY,
+                username VARCHAR(50) NOT NULL UNIQUE,
+                password_hash VARCHAR(255) NOT NULL,
+                contact_url VARCHAR(500) DEFAULT NULL,
+                social_page_link VARCHAR(500) DEFAULT NULL,
+                app_link_store_normal VARCHAR(500) DEFAULT NULL,
+                app_link_store_kiosk VARCHAR(500) DEFAULT NULL,
+                app_link_local_normal VARCHAR(500) DEFAULT NULL,
+                app_link_local_kiosk VARCHAR(500) DEFAULT NULL,
+                activation_url VARCHAR(500) DEFAULT NULL,
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+
+        $db->query('
             CREATE TABLE IF NOT EXISTS cafes (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 code VARCHAR(6) DEFAULT NULL UNIQUE,
@@ -1570,5 +1932,27 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
             )
         ');
+    }
+
+    private function seedSuperAdmin($db): void
+    {
+        $db->table('admin')->insert([
+            'id'             => 1,
+            'username'       => 'vosidiy',
+            'password_hash'  => password_hash('123', PASSWORD_DEFAULT),
+            'activation_url' => 'http://t.me/cafemenu_uz?direct',
+        ]);
+    }
+
+    private function setActivationUrl($db, string $activationUrl): void
+    {
+        $db->table('admin')->where('id', 1)->update([
+            'activation_url' => $activationUrl,
+        ]);
+    }
+
+    private function setLandingLinks($db, array $links): void
+    {
+        $db->table('admin')->where('id', 1)->update($links);
     }
 }

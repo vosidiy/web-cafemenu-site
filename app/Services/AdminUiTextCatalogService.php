@@ -38,7 +38,7 @@ class AdminUiTextCatalogService
         'username_hint' => 'Example: bestcafe or cafe123',
         'cafe_name_label' => 'Cafe name',
         'phone_label' => 'Phone',
-        'owner_name_label' => 'Owner name',
+        'owner_name_label' => 'Owner or manager name',
         'owner_or_manager_name_label' => 'Owner or manager name',
         'password_label' => 'Password',
         'password_confirm_label' => 'Confirm password',

@@ -25,7 +25,7 @@ For a detailed implementation map, read [ARCHITECTURE.md](ARCHITECTURE.md).
 - `/ru` -> alternate landing page
 - `/thankyou` -> static thank-you page
 
-### Admin
+### Cafe Owner Admin
 
 Authentication:
 
@@ -43,6 +43,25 @@ Protected admin area:
 - `POST /admin/settings/password`
 - Category CRUD under `/admin/categories`
 - Menu item CRUD under `/admin/menu-items`
+
+### Superadmin
+
+Authentication:
+
+- `GET /superadmin/login`
+- `POST /superadmin/login`
+- `GET /superadmin/logout`
+
+Protected platform admin area:
+
+- `GET /superadmin` -> all cafes table
+- `GET /superadmin/settings`
+- `POST /superadmin/settings`
+- `GET /superadmin/account`
+- `POST /superadmin/account`
+- `GET /superadmin/cafes/{id}/edit`
+- `POST /superadmin/cafes/{id}`
+- `POST /superadmin/cafes/{id}/password`
 
 ### Public Tenant Endpoints
 
@@ -68,7 +87,7 @@ Important routing note:
 - Newly registered cafes start with English (`en`) as the default menu language.
 - Public JSON includes translated menu content plus a `ui_translations` object for those enabled menu languages.
 - Newly registered cafes start with status `demo`.
-- `Config\App::$activationUrl` is the global activation/payment link used across admin, public pages, and JSON.
+- `admin.activation_url` is the global activation/payment link used across admin, public pages, and JSON.
 - Cafe status now supports `active`, `demo`, and `inactive`.
 - `active` and `demo` cafes expose the public menu, while `inactive` cafes show an activation page on `/{username}`.
 - Public JSON remains available for all known cafes: `active` and `demo` return menu data, while `inactive` returns an inactive envelope with empty `categories` and `items`.
@@ -87,6 +106,7 @@ The project currently uses SQL files instead of CodeIgniter migrations.
 
 Core tables:
 
+- `admin`
 - `cafes`
 - `categories`
 - `menu_items`
@@ -108,6 +128,7 @@ Important cafe fields:
 
 Relationship behavior:
 
+- The `admin` table is a singleton settings/account table using row `id = 1`.
 - Deleting a cafe cascades to categories and menu items.
 - Deleting a category sets `menu_items.category_id` to `NULL`.
 
@@ -225,7 +246,7 @@ Current public filtering rules:
 
 - Cafe status controls the response:
   - `active` and `demo` return the public menu.
-  - `inactive` returns the same envelope with `public_status: "inactive"`, `cafe.status: "inactive"`, `cafe.activation_url` from `Config\App::$activationUrl`, and empty `categories` / `items`.
+  - `inactive` returns the same envelope with `public_status: "inactive"`, `cafe.status: "inactive"`, `cafe.activation_url` from `admin.activation_url`, and empty `categories` / `items`.
 - `meta.languages`, `ui_translations`, category/item `translations`, and extra-fee `translations` are scoped to the cafe's enabled menu languages.
 - Clients should resolve category/item text from each record's `translations` object using `meta.default_language` as fallback.
 - Clients should resolve shell labels from `ui_translations` using selected language, then `meta.default_language`, then English fallback.
@@ -273,7 +294,9 @@ Current authentication behavior:
 - Session stores `cafe_id` and `username`
 - Protected admin routes use `AdminAuthFilter`
 - Guests are redirected to `/login` when they open protected admin routes
-- Admin pages show a shared activation banner for `demo` and `inactive` cafes using `Config\App::$activationUrl`
+- Admin pages show a shared activation banner for `demo` and `inactive` cafes using `admin.activation_url`
+- Superadmin login uses the singleton `admin` row and stores `superadmin_id` / `superadmin_username` in session
+- Protected superadmin routes use `SuperAdminAuthFilter`
 
 Current password rules in code:
 

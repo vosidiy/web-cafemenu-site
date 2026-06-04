@@ -4,8 +4,15 @@ $pageDescription = 'CafeMenu — это платформа электронно�
 $canonicalUrl = site_url('ru');
 $englishUrl = base_url('/');
 $ogImage = base_url('img/intro.png');
-$contactUrl = 'https://t.me/vosidiy?text=Здравствуйте, мне нужна помощь по CafeMenu';
-$tg_channel = 'https://t.me/cafemenu_uz';
+$landingLinks = array_replace([
+    'contact_url' => '#',
+    'social_page_link' => '#',
+    'app_link_store_normal' => '#',
+    'app_link_store_kiosk' => '#',
+    'app_link_local_normal' => '#',
+    'app_link_local_kiosk' => '#',
+    'activation_url' => '#',
+], $landingLinks ?? []);
 
 $softwareSchema = [
     '@context' => 'https://schema.org',
@@ -54,7 +61,7 @@ $softwareSchema = [
                 <div style="font-size:24px;" class="text-orange-800 font-semibold ml-1">Cafe<span class="text-secondary">Menu</span></div>
             </a>
             <div class="md:d-none ml-auto">
-                <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-icon btn-default" aria-label="Связаться с CafeMenu в Telegram">
+                <a href="<?= esc($landingLinks['contact_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-icon btn-default" aria-label="Связаться с CafeMenu в Telegram">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-phone-icon lucide-phone"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384"/></svg>
                 </a>
                 <a href="<?= site_url('login') ?>" class="btn btn-orange">Войти</a>
@@ -209,6 +216,36 @@ $softwareSchema = [
     </div>
 </section>
 
+
+
+<section class="pt-10 pb-16" id="purchase">
+    <div class="container">
+        <div class="row">
+            <div class="md:col-6 mx-auto">
+                <article class="card shadow-lg bg-neutral-100 border-orange border-width-3 md:p-8 p-4 rounded-lg">
+                    <h2 class="mb-2 text-2xl text-center lg:text-3xl">One-time license for lifetime use</h2>
+                    <p class="mb-5 text-green text-center text-lg">Try FREE demo, No credit card required.</p>
+                    
+                    <a href="<?= esc($landingLinks['activation_url']) ?>" target="_blank" class="btn btn-lg btn-orange w-full">Buy license • 190 USD ↗ </a>
+                    <p class="text-center text-sm mt-4 text-secondary"> 🔒 Secure purchase va Gumroad.com</p>
+                    
+                    <hr>
+
+                    <div class="d-grid grid-template-cols-2 gap-2">
+                        <a href="<?= site_url('login') ?>" class="btn btn-default">Log in as admin</a>
+                        <a href="<?= site_url('register') ?>" class="btn btn-default">Try for free </a>
+                    </div>
+
+                    <hr>
+                    <p class="text-center">Need help? <a href="<?= esc($landingLinks['contact_url']) ?>" target="_blank" rel="noopener noreferrer">💬 Chat via Telegram</a></p>
+                </article>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+
 <section class="py-10 border-top" id="apps">
     <div class="container" style="max-width:900px;">
         <header class="text-center mb-10 mx-auto">
@@ -218,18 +255,36 @@ $softwareSchema = [
 
         <article class="card bg-secondary card-body">
             <div class="d-flex align-items-center gap-2">
+                <svg width="32" height="32" aria-hidden="true" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg"><path fill="none" d="M0,0h40v40H0V0z"></path><g><path d="M19.7,19.2L4.3,35.3c0,0,0,0,0,0c0.5,1.7,2.1,3,4,3c0.8,0,1.5-0.2,2.1-0.6l0,0l17.4-9.9L19.7,19.2z" fill="#EA4335"></path><path d="M35.3,16.4L35.3,16.4l-7.5-4.3l-8.4,7.4l8.5,8.3l7.5-4.2c1.3-0.7,2.2-2.1,2.2-3.6C37.5,18.5,36.6,17.1,35.3,16.4z" fill="#FBBC04"></path><path d="M4.3,4.7C4.2,5,4.2,5.4,4.2,5.8v28.5c0,0.4,0,0.7,0.1,1.1l16-15.7L4.3,4.7z" fill="#4285F4"></path><path d="M19.8,20l8-7.9L10.5,2.3C9.9,1.9,9.1,1.7,8.3,1.7c-1.9,0-3.6,1.3-4,3c0,0,0,0,0,0L19.8,20z" fill="#34A853"></path></g></svg>
+
+                <h3 class="text-lg">Google Play</h3>
+            </div>
+            <hr>
+            <nav class="d-grid sm:grid-template-cols-2 gap-2">
+                <a href="<?= esc($landingLinks['app_link_store_normal']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
+                    <b>Cafe menu standard</b> <br> Скачать
+                </a>
+                <a href="<?= esc($landingLinks['app_link_store_kiosk']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
+                    <b>Cafe menu kiosk mode</b> <br> Скачать
+                </a>
+            </nav>
+        </article>
+
+        <article class="card bg-secondary mt-5 card-body">
+            <div class="d-flex align-items-center gap-2">
                 <h3 class="text-lg">APK-файл</h3>
             </div>
             <hr>
             <nav class="d-grid sm:grid-template-cols-2 gap-2">
-                <a href="https://expo.dev/accounts/vosidiy/projects/cafe-menu-tablet/builds/90c214db-1f98-4c06-a304-f172cadec9c0" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu standard (expo.dev)</b> <br> Скачать
+                <a href="<?= esc($landingLinks['app_link_local_normal']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
+                    <b>Cafe menu standard</b> <br> Скачать
                 </a>
-                <a href="https://expo.dev/artifacts/eas/iSLFvsf6GKksPZdmLiyFmL.apk" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu standard (.apk)</b> <br> Скачать
+                <a href="<?= esc($landingLinks['app_link_local_kiosk']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
+                    <b>Cafe menu kiosk mode</b> <br> Скачать
                 </a>
             </nav>
         </article>
+
         <br><br>
     </div>
 </section>
@@ -284,7 +339,8 @@ $softwareSchema = [
             <nav class="nav">
                 <a href="#header" class="nav-link">Главная</a>
                 <a href="#faq" class="nav-link">Вопросы и ответы</a>
-                <a href="#contact" class="nav-link">Контакты</a>
+                <a href="#" onclick="open_dialog('dialog_support')"  class="nav-link">Контакты</a>
+                <a href="<?= esc($landingLinks['social_page_link']) ?>" target="_blank" rel="noopener noreferrer" class="nav-link">Соцсеть</a>
             </nav>
         </section>
     </div>
@@ -330,7 +386,7 @@ $softwareSchema = [
 
             <hr>
             <p class="text-muted text-center mb-4">ИЛИ</p>
-            <a href="<?= esc($contactUrl) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">💬 Сообщение через Telegram</a>
+            <a href="<?= esc($landingLinks['contact_url']) ?>" target="_blank" rel="noopener noreferrer" class="btn btn-lg btn-default w-full">💬 Сообщение через Messenger</a>
         </article>
     </div>
 </dialog>

@@ -200,10 +200,4 @@ class App extends BaseConfig
      */
     public bool $CSPEnabled = false;
 
-    /**
-     * Global activation/payment URL shown in admin banners, public notices,
-     * and public JSON payloads for cafes that need activation.
-     */
-    public string $activationUrl = 'http://t.me/cafemenu_uz?direct';
-    
 }

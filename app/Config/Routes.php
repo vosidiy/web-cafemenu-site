@@ -9,7 +9,7 @@ $routes->get('/', 'Home::index');
 $routes->get('ru', 'Home::index_ru');
 $routes->get('sitemap.xml', 'SitemapController::index');
 
-$routes->view('thankyou', 'thankyou'); // uri and pagename
+$routes->get('thankyou', 'Home::thankyou');
 
 $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::store');
@@ -17,6 +17,20 @@ $routes->get('login', 'AuthController::login');
 $routes->post('login', 'AuthController::authenticate');
 $routes->get('logout', 'AuthController::logout');
 $routes->post('admin/language', 'AdminLanguageController::update');
+
+$routes->group('superadmin', static function ($routes) {
+    $routes->get('login', 'SuperAdminController::login');
+    $routes->post('login', 'SuperAdminController::authenticate');
+    $routes->get('logout', 'SuperAdminController::logout');
+    $routes->get('/', 'SuperAdminController::index', ['filter' => 'superadminauth']);
+    $routes->get('settings', 'SuperAdminController::settings', ['filter' => 'superadminauth']);
+    $routes->post('settings', 'SuperAdminController::updateSettings', ['filter' => 'superadminauth']);
+    $routes->get('account', 'SuperAdminController::account', ['filter' => 'superadminauth']);
+    $routes->post('account', 'SuperAdminController::updateAccount', ['filter' => 'superadminauth']);
+    $routes->get('cafes/(:num)/edit', 'SuperAdminController::editCafe/$1', ['filter' => 'superadminauth']);
+    $routes->post('cafes/(:num)', 'SuperAdminController::updateCafe/$1', ['filter' => 'superadminauth']);
+    $routes->post('cafes/(:num)/password', 'SuperAdminController::updateCafePassword/$1', ['filter' => 'superadminauth']);
+});
 
 $routes->group('admin', static function ($routes) {
     $routes->get('/', 'AdminController::index', ['filter' => 'adminauth']);

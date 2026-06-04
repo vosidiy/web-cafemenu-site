@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Services\AdminLanguageService;
 use App\Services\ActivationService;
 use App\Services\CafeService;
+use App\Services\LandingSettingsService;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -82,6 +83,7 @@ abstract class BaseController extends Controller
 
         service('renderer')->setData([
             'activationUrl' => $this->activationService->getActivationUrl(),
+            'adminContactUrl' => (new LandingSettingsService())->getPublicLinks()['contact_url'] ?? '#',
             'currentCafe' => $currentCafe,
             'showAdminActivationBanner' => $this->activationService->shouldShowAdminBanner($currentCafe),
         ], 'raw');

@@ -1,9 +1,14 @@
+<?php
+$landingLinks = array_replace([
+    'contact_url' => '#',
+], $landingLinks ?? []);
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>CafeMenu.uz - Thanks</title>
+    <title>CafeMenu.site - Thanks</title>
     <meta name="robots" content="noindex,nofollow">
     <link href="final.min.css" rel="stylesheet">
 </head>
@@ -31,18 +36,18 @@
 </svg>
 
 <div>
-  <h3 class="text-2xl text-green-500 pt-5 mb-3">Rahmat, ma'umotni qabul qildik</h3>
-  <p>Kun daovmida siz bilan aloqaga chiqamiz</p>
-  <p>Agar istasangiz, hoziroq bog'laning</p>
+  <h3 class="text-2xl text-green-500 pt-5 mb-3">Thanks, We will contact you</h3>
+  <p>Within 1-2 hours</p>
+  <p>If you want you can message us via Telegram</p>
   <p class="mt-2">🇷🇺 Спасибо, мы получили вашу информацию. <br> Мы свяжемся с вами в течение дня. <br> Если вы хотите связаться с нами, пожалуйста, сделайте это сейчас.</p>
   <hr>
-  <a href="https://t.me/vosidiy?text=Salom alaykum, CafeMenu masalasida yordam kerak" target="_blank" class="btn  btn-default">
-   📞 +99894 687-54-61
+  <a href="<?= esc($landingLinks['contact_url']) ?>" target="_blank" class="btn  btn-default">
+   💬 Chat via Messenger
   </a>
 <br><br>
   <a href="<?= base_url(); ?>" class="btn  btn-neutral">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> 
-    Orqaga / Назад
+    Go back / Назад
   </a>
 
 </div>
