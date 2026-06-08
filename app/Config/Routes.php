@@ -10,6 +10,7 @@ $routes->get('ru', 'Home::index_ru');
 $routes->get('sitemap.xml', 'SitemapController::index');
 
 $routes->get('thankyou', 'Home::thankyou');
+$routes->view('privacy-policy', 'legal'); // uri and pagename
 
 $routes->get('register', 'AuthController::register');
 $routes->post('register', 'AuthController::store');
