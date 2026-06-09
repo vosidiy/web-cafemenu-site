@@ -822,7 +822,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result->assertStatus(200);
         $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertSame('inactive', $payload['public_status']);
+        $this->assertArrayNotHasKey('public_status', $payload);
         $this->assertSame('inactive', $payload['cafe']['status']);
         $this->assertSame('https://pay.example.com/activate', $payload['cafe']['activation_url']);
         $this->assertSame([], $payload['categories']);
@@ -1103,7 +1103,8 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result->assertStatus(200);
         $payload = json_decode($result->getJSON(), true, 512, JSON_THROW_ON_ERROR);
 
-        $this->assertSame('inactive', $payload['public_status']);
+        $this->assertArrayNotHasKey('public_status', $payload);
+        $this->assertSame('inactive', $payload['cafe']['status']);
         $this->assertSame([], $payload['items']);
     }
 

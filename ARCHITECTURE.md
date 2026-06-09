@@ -199,7 +199,7 @@ Controllers are thin request handlers.
   - Resolves a cafe by username or pairing code.
   - Resolves enabled cafe languages and default language.
   - Fetches active categories and public menu items only when cafe status is `active` or `demo`.
-  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale`, top-level `ui_translations`, `public_status`, and database-backed `cafe.activation_url`.
+  - Builds the multilingual JSON structure consumed by the public UI and external clients, including `meta.languages[*].locale`, top-level `ui_translations`, `cafe.status`, and database-backed `cafe.activation_url`.
 
 - `AdminLanguageService`
   - Resolves the admin UI language from session, cookie, browser `Accept-Language`, then English fallback.
@@ -569,7 +569,6 @@ Response shape:
       }
     }
   },
-  "public_status": "active",
   "categories": [
     {
       "id": 1,
@@ -642,7 +641,7 @@ Notes:
 Public output is intentionally narrower than admin output:
 
 - `active` and `demo` cafes return the public menu payload.
-- `inactive` cafes return the same envelope with `public_status = inactive`, `cafe.status = inactive`, `cafe.activation_url` from `admin.activation_url`, and empty `categories` / `items`.
+- `inactive` cafes return the same envelope with `cafe.status = inactive`, `cafe.activation_url` from `admin.activation_url`, and empty `categories` / `items`.
 - Categories must be active to appear in `categories`.
 - Items must have `is_available = 1`.
 - Uncategorized items are allowed when `category_id` is `NULL`.

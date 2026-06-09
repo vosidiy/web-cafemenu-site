@@ -107,7 +107,6 @@ class MenuBuilderService
                     'translations' => $feeTranslations,
                 ],
             ],
-            'public_status' => $publicStatus,
             'categories' => array_map(static fn (array $category): array => [
                 'id'         => (int) $category['id'],
                 'sort_order' => (int) $category['sort_order'],
