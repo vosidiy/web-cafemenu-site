@@ -41,7 +41,7 @@ class CafeModel extends Model
         'person_name'   => 'required|min_length[2]|max_length[150]',
         'cafe_name'     => 'permit_empty|max_length[150]',
         'slogan'        => 'permit_empty|max_length[255]',
-        'currency_name' => 'required|max_length[20]',
+        'currency_name' => 'required|max_length[6]',
         'theme_style'   => 'required|max_length[20]',
         'address_text'  => 'permit_empty|max_length[255]',
         'location_url'  => 'permit_empty|max_length[500]|valid_url_strict',

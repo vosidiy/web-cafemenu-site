@@ -413,6 +413,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertNotNull($row);
         $this->assertMatchesRegularExpression('/^\d{6}$/', (string) ($row['code'] ?? ''));
         $this->assertTrue(password_verify('secret123', $row['password_hash']));
+        $this->assertSame('USD', $row['currency_name']);
         $this->assertSame('demo', $row['status']);
 
         $languageRow = Database::connect('tests')->table('cafe_languages')->where('cafe_id', $row['id'])->get()->getRowArray();
@@ -439,6 +440,46 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $this->assertNotNull($row);
         $this->assertSame('demo', $row['status']);
+    }
+
+    public function testRegistrationStoresProvidedCurrency(): void
+    {
+        $result = $this->post('register', [
+            'username'         => 'bestcafe',
+            'phone'            => '+998901234567',
+            'person_name'      => 'Ali',
+            'cafe_name'        => 'Best Cafe',
+            'currency_name'    => 'UZS',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ]);
+
+        $result->assertRedirectTo('admin');
+
+        $row = Database::connect('tests')->table('cafes')->where('username', 'bestcafe')->get()->getRowArray();
+
+        $this->assertNotNull($row);
+        $this->assertSame('UZS', $row['currency_name']);
+    }
+
+    public function testRegistrationRejectsCurrencyLongerThanSixCharacters(): void
+    {
+        $result = $this->post('register', [
+            'username'         => 'bestcafe',
+            'phone'            => '+998901234567',
+            'person_name'      => 'Ali',
+            'cafe_name'        => 'Best Cafe',
+            'currency_name'    => 'TOOLONG',
+            'password'         => 'secret123',
+            'password_confirm' => 'secret123',
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('errors');
+
+        $cafes = Database::connect('tests')->table('cafes')->where('username', 'bestcafe')->countAllResults();
+
+        $this->assertSame(0, $cafes);
     }
 
     public function testRegistrationCanSucceedWithoutCodeWhenGenerationCollidesRepeatedly(): void
@@ -1153,6 +1194,92 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame('Demo Cafe Updated', $row['cafe_name']);
     }
 
+    public function testSettingsPageRendersSeparateSettingsExtraFeeAndPasswordForms(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->get('admin/settings');
+
+        $result->assertStatus(200);
+
+        $body = (string) $result->getBody();
+
+        $this->assertStringContainsString('admin/settings', $body);
+        $this->assertStringContainsString('admin/settings/extra-fee', $body);
+        $this->assertStringContainsString('admin/settings/password', $body);
+        $this->assertStringContainsString('id="extraFeeDetails"', $body);
+    }
+
+    public function testMainSettingsUpdateDoesNotChangeExtraFeeFieldsOrTranslations(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'                => 1,
+            'username'          => 'bestcafe',
+            'phone'             => '+998901234567',
+            'person_name'       => 'Ali',
+            'cafe_name'         => 'Best Cafe',
+            'password_hash'     => password_hash('secret123', PASSWORD_DEFAULT),
+            'currency_name'     => 'USD',
+            'theme_style'       => 'theme1',
+            'extra_fee_enabled' => 1,
+            'extra_fee_type'    => 'percent',
+            'extra_fee_value'   => '5.00',
+            'status'            => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+        $db->table('cafe_fee_translations')->insert(['cafe_id' => 1, 'language_code' => 'en', 'label' => 'Service fee']);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings', [
+            'person_name'       => 'Ali Updated',
+            'phone'             => '+998907770011',
+            'cafe_name'         => 'Best Cafe Updated',
+            'slogan'            => '',
+            'currency_name'     => 'UZS',
+            'theme_style'       => 'theme2',
+            'address_text'      => '',
+            'location_url'      => '',
+            'languages'         => ['en', '', ''],
+            'extra_fee_enabled' => '0',
+            'extra_fee_type'    => 'fixed',
+            'extra_fee_value'   => '100.00',
+            'fee_translations'  => [
+                'en' => ['label' => 'Changed fee'],
+            ],
+        ]);
+
+        $result->assertRedirectTo('admin/settings');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+        $translation = $db->table('cafe_fee_translations')->where('cafe_id', 1)->where('language_code', 'en')->get()->getRowArray();
+
+        $this->assertSame('Ali Updated', $cafe['person_name']);
+        $this->assertSame(1, (int) $cafe['extra_fee_enabled']);
+        $this->assertSame('percent', $cafe['extra_fee_type']);
+        $this->assertSame('5.00', (string) $cafe['extra_fee_value']);
+        $this->assertSame('Service fee', $translation['label']);
+    }
+
     public function testMenuJsonByInvalidPairingCodeReturnsNotFound(): void
     {
         $result = $this->get('code/999999');
@@ -1449,16 +1576,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result = $this->withSession([
             'cafe_id'  => 1,
             'username' => 'bestcafe',
-        ])->post('admin/settings', [
-            'person_name'       => 'Ali',
-            'phone'             => '+998901234567',
-            'cafe_name'         => 'Best Cafe',
-            'slogan'            => '',
-            'currency_name'     => 'USD',
-            'theme_style'       => 'theme1',
-            'address_text'      => '',
-            'location_url'      => '',
-            'languages'         => ['en', '', ''],
+        ])->post('admin/settings/extra-fee', [
             'extra_fee_enabled' => '1',
             'extra_fee_type'    => 'fixed',
             'extra_fee_value'   => '10.00',
@@ -1509,16 +1627,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $result = $this->withSession([
             'cafe_id'  => 1,
             'username' => 'bestcafe',
-        ])->post('admin/settings', [
-            'person_name'       => 'Ali',
-            'phone'             => '+998901234567',
-            'cafe_name'         => 'Best Cafe',
-            'slogan'            => '',
-            'currency_name'     => 'USD',
-            'theme_style'       => 'theme1',
-            'address_text'      => '',
-            'location_url'      => '',
-            'languages'         => ['ru', 'en', ''],
+        ])->post('admin/settings/extra-fee', [
             'extra_fee_enabled' => '1',
             'extra_fee_type'    => 'percent',
             'extra_fee_value'   => '5.00',
@@ -1545,6 +1654,134 @@ final class CafeMenuFlowTest extends CIUnitTestCase
         $this->assertSame(5.0, $payload['cafe']['extra_fee']['value']);
         $this->assertSame('Сервисный сбор', $payload['cafe']['extra_fee']['translations']['ru']['label']);
         $this->assertSame('Service fee', $payload['cafe']['extra_fee']['translations']['en']['label']);
+    }
+
+    public function testExtraFeeSettingsCanDisableFeeWithoutClearingStoredDetails(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'                => 1,
+            'code'              => '556676',
+            'username'          => 'bestcafe',
+            'phone'             => '+998901234567',
+            'person_name'       => 'Ali',
+            'cafe_name'         => 'Best Cafe',
+            'password_hash'     => password_hash('secret123', PASSWORD_DEFAULT),
+            'extra_fee_enabled' => 1,
+            'extra_fee_type'    => 'fixed',
+            'extra_fee_value'   => '10.00',
+            'status'            => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+        $db->table('cafe_fee_translations')->insert(['cafe_id' => 1, 'language_code' => 'en', 'label' => 'Delivery fee']);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings/extra-fee', [
+            'extra_fee_type'   => 'percent',
+            'extra_fee_value'  => '99.00',
+            'fee_translations' => [
+                'en' => ['label' => 'Changed fee'],
+            ],
+        ]);
+
+        $result->assertRedirectTo('admin/settings');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+        $translation = $db->table('cafe_fee_translations')->where('cafe_id', 1)->where('language_code', 'en')->get()->getRowArray();
+
+        $this->assertSame(0, (int) $cafe['extra_fee_enabled']);
+        $this->assertSame('fixed', $cafe['extra_fee_type']);
+        $this->assertSame('10.00', (string) $cafe['extra_fee_value']);
+        $this->assertSame('Delivery fee', $translation['label']);
+
+        $payload = json_decode($this->get('bestcafe/menu.json')->getJSON(), true, 512, JSON_THROW_ON_ERROR);
+
+        $this->assertFalse($payload['cafe']['extra_fee']['enabled']);
+        $this->assertNull($payload['cafe']['extra_fee']['type']);
+        $this->assertNull($payload['cafe']['extra_fee']['value']);
+        $this->assertSame([], $payload['cafe']['extra_fee']['translations']);
+    }
+
+    public function testExtraFeeSettingsRejectEnabledFeeWithoutValidTypeAndValue(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'                => 1,
+            'username'          => 'bestcafe',
+            'phone'             => '+998901234567',
+            'person_name'       => 'Ali',
+            'cafe_name'         => 'Best Cafe',
+            'password_hash'     => password_hash('secret123', PASSWORD_DEFAULT),
+            'extra_fee_enabled' => 0,
+            'status'            => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings/extra-fee', [
+            'extra_fee_enabled' => '1',
+            'extra_fee_type'    => '',
+            'extra_fee_value'   => '0',
+            'fee_translations'  => [
+                'en' => ['label' => 'Delivery fee'],
+            ],
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('errors');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+
+        $this->assertSame(0, (int) $cafe['extra_fee_enabled']);
+        $this->assertNull($cafe['extra_fee_type']);
+        $this->assertNull($cafe['extra_fee_value']);
+    }
+
+    public function testExtraFeeSettingsRejectEnabledFeeWithoutDefaultLanguageLabel(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'                => 1,
+            'username'          => 'bestcafe',
+            'phone'             => '+998901234567',
+            'person_name'       => 'Ali',
+            'cafe_name'         => 'Best Cafe',
+            'password_hash'     => password_hash('secret123', PASSWORD_DEFAULT),
+            'extra_fee_enabled' => 0,
+            'status'            => 'active',
+        ]);
+
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->post('admin/settings/extra-fee', [
+            'extra_fee_enabled' => '1',
+            'extra_fee_type'    => 'fixed',
+            'extra_fee_value'   => '10.00',
+            'fee_translations'  => [
+                'en' => ['label' => ''],
+            ],
+        ]);
+
+        $result->assertRedirect();
+        $result->assertSessionHas('errors');
+
+        $cafe = $db->table('cafes')->where('id', 1)->get()->getRowArray();
+        $translations = $db->table('cafe_fee_translations')->where('cafe_id', 1)->get()->getResultArray();
+
+        $this->assertSame(0, (int) $cafe['extra_fee_enabled']);
+        $this->assertSame([], $translations);
     }
 
     public function testCategoryCreateShowsUploadTooLargeErrorWhenMultipartRequestExceedsPostMaxSize(): void
@@ -1849,7 +2086,7 @@ final class CafeMenuFlowTest extends CIUnitTestCase
                 slogan VARCHAR(255) DEFAULT NULL,
                 password_hash VARCHAR(255) NOT NULL,
                 logo_path VARCHAR(255) DEFAULT NULL,
-                currency_name VARCHAR(20) NOT NULL DEFAULT "UZS",
+                currency_name VARCHAR(6) NOT NULL DEFAULT "USD",
                 theme_style VARCHAR(20) NOT NULL DEFAULT "theme1",
                 address_text VARCHAR(255) DEFAULT NULL,
                 location_url VARCHAR(500) DEFAULT NULL,

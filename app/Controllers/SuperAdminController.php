@@ -218,7 +218,7 @@ class SuperAdminController extends BaseController
             'person_name'   => trim((string) $this->request->getPost('person_name')),
             'cafe_name'     => trim((string) $this->request->getPost('cafe_name')),
             'slogan'        => trim((string) $this->request->getPost('slogan')),
-            'currency_name' => trim((string) $this->request->getPost('currency_name')) ?: 'UZS',
+            'currency_name' => trim((string) $this->request->getPost('currency_name')) ?: 'USD',
             'status'        => trim((string) $this->request->getPost('status')),
         ];
 
@@ -232,7 +232,7 @@ class SuperAdminController extends BaseController
             'person_name'   => 'required|min_length[2]|max_length[150]',
             'cafe_name'     => 'permit_empty|max_length[150]',
             'slogan'        => 'permit_empty|max_length[255]',
-            'currency_name' => 'required|max_length[20]',
+            'currency_name' => 'required|max_length[6]',
             'status'        => 'required|in_list[active,inactive,demo]',
         ];
 

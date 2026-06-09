@@ -40,6 +40,7 @@ Protected admin area:
 - `GET /admin`
 - `GET /admin/settings`
 - `POST /admin/settings`
+- `POST /admin/settings/extra-fee`
 - `POST /admin/settings/password`
 - Category CRUD under `/admin/categories`
 - Menu item CRUD under `/admin/menu-items`
@@ -85,6 +86,7 @@ Important routing note:
 - Categories and menu items belong to a cafe through `cafe_id`.
 - Each cafe enables `1..3` menu languages through `cafe_languages`.
 - Newly registered cafes start with English (`en`) as the default menu language.
+- Newly registered cafes may provide an optional `currency_name` up to 6 characters; blank registration uses `USD`.
 - Public JSON includes translated menu content plus a `ui_translations` object for those enabled menu languages.
 - Newly registered cafes start with status `demo`.
 - `admin.activation_url` is the global activation/payment link used across admin, public pages, and JSON.
@@ -119,6 +121,7 @@ Important cafe fields:
 
 - `code`
 - `username`
+- `currency_name`
 - `status`
 - `menu_updated_at`
 - `logo_path`

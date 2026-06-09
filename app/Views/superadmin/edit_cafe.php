@@ -45,7 +45,7 @@
                 </div>
                 <div class="md:col-4 mb-4">
                     <label class="form-label">Currency</label>
-                    <input type="text" name="currency_name" class="form-control" value="<?= esc(menu_old('currency_name', $cafe['currency_name'])) ?>" required>
+                    <input type="text" name="currency_name" maxlength="6" class="form-control" value="<?= esc(menu_old('currency_name', $cafe['currency_name'])) ?>" required>
                 </div>
             </div>
             <div class="row">

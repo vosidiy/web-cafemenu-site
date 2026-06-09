@@ -58,9 +58,9 @@
             <form method="post" action="<?= site_url('register') ?>">
                 <?= csrf_field() ?>
                 <div class="mb-4">
-                    <label class="form-label mb-0"><?= esc(admin_ui('username_label')) ?></label>
-                    <div class="text-sm text-secondary mb-2"><?= esc(admin_ui('username_hint')) ?></div>
+                    <label class="form-label font-semibold"><?= esc(admin_ui('username_label')) ?></label>
                     <input type="text" name="username" placeholder="username" class="form-control" value="<?= esc(menu_old('username')) ?>" required>
+                    <div class="text-sm mt-1 text-secondary mb-2"><?= esc(admin_ui('username_hint')) ?></div>
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('cafe_name_label')) ?></label>
@@ -68,12 +68,17 @@
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('phone_label')) ?></label>
-                    <input type="text" name="phone" class="form-control" value="<?= esc(menu_old('phone', '+998')) ?>" required>
+                    <input type="text" name="phone" class="form-control" value="<?= esc(menu_old('phone')) ?>" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label"><?= esc(admin_ui('currency_label')) ?></label>
+                    <input type="text" name="currency_name" maxlength="6" placeholder="USD" class="form-control" value="<?= esc(menu_old('currency_name')) ?>">
                 </div>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('owner_name_label')) ?></label>
                     <input type="text" name="person_name" placeholder="Full name" class="form-control" value="<?= esc(menu_old('person_name')) ?>" required>
                 </div>
+                <hr>
                 <div class="mb-4">
                     <label class="form-label"><?= esc(admin_ui('password_label')) ?> </label>
                     <input type="password" name="password" class="form-control" required>
@@ -90,11 +95,58 @@
     </article>
 
     <p class="text-center my-5"> <?= esc(admin_ui('already_have_account')) ?> <br>
-        <a href="<?= site_url('login') ?>"> <?= esc(admin_ui('login_link_label')) ?> (Admin login) </a>
+        <a class="font-semibold" href="<?= site_url('login') ?>"> <?= esc(admin_ui('login_link_label')) ?> (Admin) </a>
     </p>
 
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    const currencyInput = document.querySelector('input[name="currency_name"]');
+
+    if (!phoneInput && !currencyInput) {
+        return;
+    }
+
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(function () {
+        controller.abort();
+    }, 3500);
+
+    fetch('https://ipapi.co/json/', {
+        signal: controller.signal,
+        headers: {
+            Accept: 'application/json',
+        },
+    })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('IP lookup failed');
+            }
+
+            return response.json();
+        })
+        .then(function (data) {
+            const callingCode = typeof data.country_calling_code === 'string' ? data.country_calling_code.trim() : '';
+            const currency = typeof data.currency === 'string' ? data.currency.trim().slice(0, 6) : '';
+
+            if (phoneInput && phoneInput.value.trim() === '' && callingCode !== '') {
+                phoneInput.value = callingCode;
+            }
+
+            if (currencyInput && currencyInput.value.trim() === '' && currency !== '') {
+                currencyInput.value = currency.toUpperCase();
+            }
+        })
+        .catch(function () {
+            // Registration must keep working when geolocation is unavailable.
+        })
+        .finally(function () {
+            window.clearTimeout(timeoutId);
+        });
+});
+</script>
 
 </body>
 </html>

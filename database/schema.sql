@@ -36,7 +36,7 @@ CREATE TABLE `cafes` (
   `slogan` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `logo_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `currency_name` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'UZS',
+  `currency_name` varchar(6) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'USD',
   `theme_style` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'theme1',
   `address_text` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `location_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,

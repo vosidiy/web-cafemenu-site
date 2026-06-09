@@ -259,10 +259,10 @@ $softwareSchema = [
             <hr>
             <nav class="d-grid sm:grid-template-cols-2 gap-2">
                 <a href="<?= esc($landingLinks['app_link_store_normal']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu standard</b> <br> Скачать
+                    <b>Cafe menu standard</b> <br> Download
                 </a>
                 <a href="<?= esc($landingLinks['app_link_store_kiosk']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu kiosk mode</b> <br> Скачать
+                    <b>Cafe menu kiosk mode</b> <br> Download
                 </a>
             </nav>
         </article>
@@ -274,10 +274,10 @@ $softwareSchema = [
             <hr>
             <nav class="d-grid sm:grid-template-cols-2 gap-2">
                 <a href="<?= esc($landingLinks['app_link_local_normal']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu standard</b> <br> Скачать
+                    <b>Cafe menu standard</b> <br> Download APK 
                 </a>
                 <a href="<?= esc($landingLinks['app_link_local_kiosk']) ?>" class="border d-block hover:border-primary rounded p-3 bg-base shadow" target="_blank" rel="noopener noreferrer">
-                    <b>Cafe menu kiosk mode</b> <br> Скачать
+                    <b>Cafe menu kiosk mode</b> <br> Download APK 
                 </a>
             </nav>
         </article>

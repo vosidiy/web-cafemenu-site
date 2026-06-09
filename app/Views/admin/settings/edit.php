@@ -95,7 +95,7 @@
             <div class="row">
                 <div class="md:col-4 mb-4">
                     <label class="form-label"><?= esc(admin_ui('currency_label')) ?></label>
-                    <input type="text" name="currency_name" class="form-control" value="<?= esc(menu_old('currency_name', $cafe['currency_name'])) ?>">
+                    <input type="text" name="currency_name" maxlength="6" class="form-control" value="<?= esc(menu_old('currency_name', $cafe['currency_name'])) ?>">
                 </div>
                 <div class="md:col-4 mb-4">
                     <label class="form-label"><?= esc(admin_ui('theme_style_label')) ?></label>
@@ -113,9 +113,22 @@
                     <?php endif; ?>
                 </div>
             </div>
-            
             <hr>
-            <h5 class="text-xl mb-3">💵 <?= esc(admin_ui('extra_fee_section')) ?></h5>
+            
+            <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_settings')) ?></button>
+        </form>
+    </div>
+</div>
+
+<div class="card my-5">
+    <div class="card-body">
+        <h5 class="text-xl mb-3">💵 <?= esc(admin_ui('extra_fee_section')) ?></h5>
+        <form method="post" action="<?= site_url('admin/settings/extra-fee') ?>">
+            <?= csrf_field() ?>
+            <?php
+                $extraFeeEnabled = (int) menu_old('extra_fee_enabled', $cafe['extra_fee_enabled'] ?? 0) === 1;
+                $defaultLanguage = $selectedLanguages[1] ?? menu_configured_default_language();
+            ?>
 
             <div class="form-check my-4">
                 <input
@@ -124,59 +137,59 @@
                     name="extra_fee_enabled"
                     id="extraFeeEnabled"
                     value="1"
-                    <?= (int) menu_old('extra_fee_enabled', $cafe['extra_fee_enabled'] ?? 0) === 1 ? 'checked' : '' ?>
+                    <?= $extraFeeEnabled ? 'checked' : '' ?>
                 >
                 <label class="form-check-label" for="extraFeeEnabled"><?= esc(admin_ui('enable_extra_fee')) ?></label>
             </div>
-            <div class="row">
-                <div class="md:col-4 mb-5">
-                    <label class="form-label"><?= esc(admin_ui('extra_fee_type_label')) ?></label>
-                    <select name="extra_fee_type" class="form-select">
-                        <option value=""><?= esc(admin_ui('not_selected')) ?></option>
-                        <option value="fixed" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'fixed' ? 'selected' : '' ?>><?= esc(admin_ui('fixed_amount')) ?></option>
-                        <option value="percent" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'percent' ? 'selected' : '' ?>><?= esc(admin_ui('percent_of_total')) ?></option>
-                    </select>
+
+            <div id="extraFeeDetails" <?= $extraFeeEnabled ? '' : 'hidden' ?>>
+                <div class="row">
+                    <div class="md:col-4 mb-5">
+                        <label class="form-label"><?= esc(admin_ui('extra_fee_type_label')) ?></label>
+                        <select name="extra_fee_type" class="form-select">
+                            <option value=""><?= esc(admin_ui('not_selected')) ?></option>
+                            <option value="fixed" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'fixed' ? 'selected' : '' ?>><?= esc(admin_ui('fixed_amount')) ?></option>
+                            <option value="percent" <?= menu_old('extra_fee_type', $cafe['extra_fee_type'] ?? '') === 'percent' ? 'selected' : '' ?>><?= esc(admin_ui('percent_of_total')) ?></option>
+                        </select>
+                    </div>
+                    <div class="md:col-4 mb-5">
+                        <label class="form-label"><?= esc(admin_ui('fee_value_label')) ?></label>
+                        <input
+                            type="number"
+                            step="0.01"
+                            min="0.01"
+                            name="extra_fee_value"
+                            class="form-control"
+                            value="<?= esc((string) menu_old('extra_fee_value', $cafe['extra_fee_value'] ?? '')) ?>"
+                        >
+                    </div>
                 </div>
-                <div class="md:col-4 mb-5">
-                    <label class="form-label"><?= esc(admin_ui('fee_value_label')) ?></label>
-                    <input
-                        type="number"
-                        step="0.01"
-                        min="0.01"
-                        name="extra_fee_value"
-                        class="form-control"
-                        value="<?= esc((string) menu_old('extra_fee_value', $cafe['extra_fee_value'] ?? '')) ?>"
-                    >
+
+                <div class="row">
+                <?php foreach ($cafeLanguages as $language): ?>
+                    <?php
+                        $languageCode = $language['language_code'] ?? $language['code'];
+                        $savedTranslation = $feeTranslations[$languageCode] ?? [];
+                    ?>
+                    <div class="md:col-4 mb-4">
+                        <label class="form-label">
+                            <?= esc(admin_ui('extra_fee_name_label')) ?>: <?= esc(($language['flag'] ?? '') . ' ' . $language['native_label']) ?>
+                            <?php if ($languageCode === $defaultLanguage): ?>
+                                <span class="text-danger">*</span>
+                            <?php endif; ?>
+                        </label>
+                        <input
+                            type="text"
+                            name="fee_translations[<?= esc($languageCode) ?>][label]"
+                            class="form-control"
+                            value="<?= esc(menu_old_fee_translation($languageCode, 'label', $savedTranslation['label'] ?? '')) ?>"
+                        >
+                    </div>
+                <?php endforeach; ?>
                 </div>
-            </div>
-            <?php $defaultLanguage = menu_old('languages.0', $selectedLanguages[1] ?? menu_configured_default_language()); ?>
-            
-            <div class="row">
-            <?php foreach ($cafeLanguages as $language): ?>
-                <?php
-                    $languageCode = $language['language_code'] ?? $language['code'];
-                    $savedTranslation = $feeTranslations[$languageCode] ?? [];
-                ?>
-                <div class="md:col-4 mb-4">
-                    <label class="form-label">
-                        <?= esc(admin_ui('extra_fee_name_label')) ?>: <?= esc(($language['flag'] ?? '') . ' ' . $language['native_label']) ?>
-                        <?php if ($languageCode === $defaultLanguage): ?>
-                            <span class="text-danger">*</span>
-                        <?php endif; ?>
-                    </label>
-                    <input
-                        type="text"
-                        name="fee_translations[<?= esc($languageCode) ?>][label]"
-                        class="form-control"
-                        value="<?= esc(menu_old_fee_translation($languageCode, 'label', $savedTranslation['label'] ?? '')) ?>"
-                    >
-                </div>
-            <?php endforeach; ?>
             </div>
 
-            <hr>
-            
-            <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_settings')) ?></button>
+            <button type="submit" class="btn btn-primary"><?= esc(admin_ui('save_extra_fee')) ?></button>
         </form>
     </div>
 </div>
@@ -207,4 +220,24 @@
 
 <br><br>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const enabledInput = document.getElementById('extraFeeEnabled');
+    const details = document.getElementById('extraFeeDetails');
+
+    if (!enabledInput || !details) {
+        return;
+    }
+
+    const toggleExtraFeeDetails = function () {
+        details.hidden = !enabledInput.checked;
+    };
+
+    enabledInput.addEventListener('change', toggleExtraFeeDetails);
+    toggleExtraFeeDetails();
+});
+</script>
 <?= $this->endSection() ?>

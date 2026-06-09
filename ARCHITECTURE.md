@@ -45,6 +45,7 @@ Authenticated routes guarded by `adminauth`:
 - `GET /admin`
 - `GET /admin/settings`
 - `POST /admin/settings`
+- `POST /admin/settings/extra-fee`
 - `POST /admin/settings/password`
 - Category CRUD under `/admin/categories`
 - Menu item CRUD under `/admin/menu-items`
@@ -101,11 +102,11 @@ Registration and login are handled by `AuthController`.
 
 Registration flow:
 
-1. Read POST values for username, phone, person name, cafe name, password, currency, and theme.
+1. Read POST values for username, phone, person name, cafe name, optional currency, and theme.
 2. Normalize username by trimming, removing all whitespace, and lowercasing.
-3. Validate request data using the normalized username.
+3. Validate request data using the normalized username, including a maximum 6-character currency when provided.
 4. Hash the password with `password_hash()`.
-5. Set the new cafe status to `demo`.
+5. Use `USD` when the registration currency is blank and set the new cafe status to `demo`.
 6. Attempt to insert a row into `cafes` with a randomly generated 6-digit pairing code.
 7. If code collisions keep happening, insert the cafe with `code = NULL` and continue registration.
 8. Insert the default cafe language row from the centralized app language configuration, currently `en`.
@@ -138,7 +139,7 @@ Category and menu item CRUD follow the same tenant pattern:
 4. Save translations in `category_translations` / `menu_item_translations`.
 5. On successful create, update, delete, or settings change, call `CafeService::touchMenuUpdatedAt()`.
 
-Cafe settings updates also persist tenant-scoped language rows and optional cart-fee label translations in `cafe_fee_translations`.
+Cafe settings updates persist tenant-scoped language rows. Extra fee settings are saved through a separate settings form and endpoint, preserving saved fee details when the fee is disabled.
 
 Ownership enforcement is implemented in code:
 
@@ -175,7 +176,7 @@ Controllers are thin request handlers.
 - `AuthController` handles registration, login, logout, username normalization, and best-effort pairing-code generation.
 - `AdminLanguageController` persists the selected admin UI language and redirects back to the current page.
 - `AdminController` loads dashboard data and public URLs for the current cafe.
-- `CafeSettingsController` updates cafe profile fields, logo, and password while preserving the stored cafe status.
+- `CafeSettingsController` updates cafe profile fields, logo, extra fee settings, and password while preserving the stored cafe status.
 - `CategoryController` manages category CRUD for the current cafe.
 - `MenuItemController` manages menu item CRUD and image uploads for the current cafe.
 - `MenuJsonController` returns the normalized public JSON payload.
@@ -364,6 +365,8 @@ Important fields:
 - `menu_updated_at`
 - `status`
 - `created_at`
+
+`currency_name` is stored as a short display code/name up to 6 characters and defaults to `USD`.
 - `updated_at`
 
 Behavior:

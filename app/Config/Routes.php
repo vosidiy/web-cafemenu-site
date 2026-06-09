@@ -37,6 +37,7 @@ $routes->group('admin', static function ($routes) {
     $routes->get('/', 'AdminController::index', ['filter' => 'adminauth']);
     $routes->get('settings', 'CafeSettingsController::edit', ['filter' => 'adminauth']);
     $routes->post('settings', 'CafeSettingsController::update', ['filter' => 'adminauth']);
+    $routes->post('settings/extra-fee', 'CafeSettingsController::updateExtraFee', ['filter' => 'adminauth']);
     $routes->post('settings/password', 'CafeSettingsController::updatePassword', ['filter' => 'adminauth']);
 
     $routes->get('categories', 'CategoryController::index', ['filter' => 'adminauth']);

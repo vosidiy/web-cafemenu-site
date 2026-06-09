@@ -44,7 +44,7 @@ class AuthController extends BaseController
             'person_name'    => trim((string) $this->request->getPost('person_name')),
             'cafe_name'      => trim((string) $this->request->getPost('cafe_name')),
             'password_hash'  => password_hash((string) $this->request->getPost('password'), PASSWORD_DEFAULT),
-            'currency_name'  => trim((string) $this->request->getPost('currency_name')) ?: 'UZS',
+            'currency_name'  => trim((string) $this->request->getPost('currency_name')) ?: 'USD',
             'theme_style'    => trim((string) $this->request->getPost('theme_style')) ?: 'theme1',
             'status'         => 'demo',
         ];
@@ -57,6 +57,7 @@ class AuthController extends BaseController
             'phone'            => 'required|min_length[5]|max_length[30]',
             'person_name'      => 'required|min_length[2]|max_length[150]',
             'cafe_name'        => 'permit_empty|max_length[150]',
+            'currency_name'    => 'permit_empty|max_length[6]',
             'password'         => 'required|min_length[5]|max_length[255]',
             'password_confirm' => 'required|matches[password]',
         ];
