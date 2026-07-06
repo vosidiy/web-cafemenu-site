@@ -37,7 +37,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label"><?= esc(admin_ui('description_label')) ?>: <?= esc(($language['flag'] ?? '') . ' ' . $language['native_label']) ?></label>
-                        <textarea name="translations[<?= esc($languageCode) ?>][description]" class="form-control" rows="2"><?= esc(menu_old_translation($languageCode, 'description', $savedTranslation['description'] ?? '')) ?></textarea>
+                        <textarea name="translations[<?= esc($languageCode) ?>][description]" class="form-control" rows="2" placeholder="Optional"><?= esc(menu_old_translation($languageCode, 'description', $savedTranslation['description'] ?? '')) ?></textarea>
                     </div>
                 </div>
             <?php endforeach; ?>
@@ -65,7 +65,7 @@
                 </div>
                 <div class="col-2 mb-4">
                     <label class="form-label"><?= esc(admin_ui('sort_order')) ?></label>
-                    <input type="number" name="sort_order" class="form-control" value="<?= esc((string) menu_old('sort_order', $item['sort_order'] ?? 0)) ?>" required>
+                    <input type="number" name="sort_order" class="form-control" value="<?= esc((string) menu_old('sort_order', $item['sort_order'] ?? 100)) ?>" required>
                 </div>
             </div>
             

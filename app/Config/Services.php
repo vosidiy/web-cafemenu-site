@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Services\QrCodeGenerator;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -19,6 +20,15 @@ use CodeIgniter\Config\BaseService;
  */
 class Services extends BaseService
 {
+    public static function qrCodeGenerator(bool $getShared = true): QrCodeGenerator
+    {
+        if ($getShared) {
+            return static::getSharedInstance('qrCodeGenerator');
+        }
+
+        return new QrCodeGenerator();
+    }
+
     /*
      * public static function example($getShared = true)
      * {

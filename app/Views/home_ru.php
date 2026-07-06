@@ -190,8 +190,8 @@ $softwareSchema = [
 
 <section class="py-10">
     <div class="container">
-        <div class="position-relative overflow-hidden bg-orange-900 rounded-lg" style="background-image:url(img/bg-about.png)">
-            <article class="p-6 lg:p-10" style="background-color:rgba(0,0,0,0.6); max-width:720px">
+        <div class="bg-size-cover position-relative overflow-hidden bg-orange-900 rounded-lg" style="background-image:url(img/bg-about.png)">
+            <article class="p-6 lg:p-10" style="background-color:rgba(0,0,0,0.6); max-width:680px">
                 <h2 class="mb-2 text-white text-2xl lg:text-5xl">Чем CafeMenu отличается от других решений?</h2>
                 <ul class="d-flex flex-col gap-4 my-5 text-white list-bullet">
                     <li>
@@ -216,6 +216,55 @@ $softwareSchema = [
     </div>
 </section>
 
+
+<section class="pb-10" id="features">
+<div class="container">
+<div class="d-grid sm:grid-template-cols-2 lg:grid-template-cols-3  gap-4">
+    <article class="bg-orange-100 p-4 rounded">
+        <div class="bg-orange-300 d-inline-block p-3 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-focus-icon lucide-focus"><circle cx="12" cy="12" r="3"/><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/></svg>
+        </div>
+        <h5 class="text-xl  mt-3 mb-1">QR-меню</h5>
+        <p>Скачайте QR-код и разместите его на столе</p>
+    </article>
+    <article class="bg-green-100 p-4 rounded">
+        <div class="bg-green-300 d-inline-block p-3 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tablet-icon lucide-tablet"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><line x1="12" x2="12.01" y1="18" y2="18"/></svg>
+        </div>
+        <h5 class="text-xl  mt-3 mb-1">Android-приложение</h5>
+        <p>Установите наше приложение на ваш планшет</p>
+    </article>
+    <article class="bg-blue-100 p-4 rounded">
+        <div class="bg-blue-300 d-inline-block p-3 rounded">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-lock-icon lucide-lock"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        </div>
+        <h5 class="text-xl  mt-3 mb-1">Режим киоска</h5>
+        <p>Клиенты не смогут выйти из приложения</p>
+    </article>
+    <article class="bg-red-100 p-4 rounded">
+        <div class="bg-red-300 d-inline-block p-3 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-swatch-book-icon lucide-swatch-book"><path d="M11 17a4 4 0 0 1-8 0V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2Z"/><path d="M16.7 13H19a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2H7"/><path d="M 7 17h.01"/><path d="m11 8 2.3-2.3a2.4 2.4 0 0 1 3.404.004L18.6 7.6a2.4 2.4 0 0 1 .026 3.434L9.9 19.8"/></svg>
+        </div>
+        <h5 class="text-xl  mt-3 mb-1">Разные темы</h5>
+        <p>Настраивайте оформление вашего приложения</p>
+    </article>
+    <article class="bg-purple-100 p-4 rounded">
+        <div class="bg-purple-300 d-inline-block p-3 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-globe-icon lucide-globe"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        </div>
+        <h5 class="text-xl  mt-3 mb-1">Мультиязычность</h5>
+        <p>Добавляйте перевод для вашего меню</p>
+    </article>
+    <article class="bg-yellow-100 p-4 rounded">
+        <div class="bg-yellow-300 d-inline-block p-3 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+        </div>
+        <h5 class="text-xl mt-3 mb-1">Бесплатный пробный период</h5>
+        <p>Получите доступ ко всем функциям</p>
+    </article>
+</div>
+</div>
+</section>
 
 
 <section class="pt-10 pb-16" id="purchase">

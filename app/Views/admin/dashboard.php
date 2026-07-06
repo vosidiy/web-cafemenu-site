@@ -4,28 +4,52 @@
 
 <header class="md:d-flex align-items-center justify-content-between py-4">
     <h2 class="text-3xl"><?= esc(admin_ui('dashboard_manage')) ?>: <?= esc($cafe['cafe_name'] ?: $cafe['username']) ?></h2>
-    <div class="card p-2 mt-3 md:mt-0">
-        <h5 class="text-lg text-secondary">📲 <?= esc(admin_ui('pairing_code')) ?>: <?= esc($cafe['code'] ?? '-') ?></h5>
+    <div class="d-flex md:gap-3 flex-wrap text-secondary">
+        <p><?= esc(admin_ui('items_count')) ?>: <span class="fw-semibold"><?= esc($itemCount) ?></span> •</p>
+        <p><?= esc(admin_ui('categories_count')) ?>: <span class="fw-semibold"><?= esc($categoryCount) ?></span> •</p>
+        <p><?= esc(admin_ui('updated_at')) ?>: <span class="fw-semibold"><?= esc($cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? '-') ?></span></p>
     </div>
 </header>
 
 
-<div class="d-flex md:gap-3 flex-wrap mb-4 border-top border-color-neutral-300 pt-3">
+<div class="d-grid sm:grid-template-cols-3 gap-2 mb-2">
+
+    <a target="_blank" href="https://play.google.com/store/apps/details?id=normal.cafemenu.site" class="card bg-blue-100 border-color-blue-200 hover:border-color-blue-500 flex-row gap-3 align-items-center  p-2 sm:p-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download-icon lucide-download"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+        <div>
+            <p class="text-lg font-600">Install App ↗</p>
+            <p class="text-secondary"> Download from Google Play </p>
+        </div>
+    </a>
+
+    <a href="<?= esc(site_url($cafe['username'] . '/qr-code.png')) ?>" class="card bg-orange-100 border-color-orange-200 hover:border-color-orange-500 flex-row gap-3 align-items-center p-2 sm:p-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-qr-code-icon lucide-qr-code"><rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/></svg>
+        <div>
+            <p class="text-lg font-600">Download QR code</p>
+            <p class="text-secondary"> Print and keep it on table</p>
+        </div>
+    </a>
+
+    <a href="<?= site_url(session('username')) ?>" target="_blank" class="card bg-purple-100 border-color-purple-200 hover:border-color-purple-500 flex-row gap-3 align-items-center p-2 sm:p-4">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-mouse-pointer-icon lucide-square-mouse-pointer"><path d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"/><path d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"/></svg>
+        <div>
+            <p class="text-lg font-600"><?= esc(admin_ui('open_menu')) ?> ↗</p>
+            <p class="text-secondary"> <?= site_url(session('username')) ?> </p>
+        </div>
+    </a>
+</div>
+
+<article class="card p-3 flex-row gap-2 mb-5">
+    <span class="text-xl">
+        📲
+    </span>
     <div>
-        <p><?= esc(admin_ui('items_count')) ?>: <span class="fw-semibold"><?= esc($itemCount) ?></span> •</p>
-    </div>
-    <div>
-        <p><?= esc(admin_ui('categories_count')) ?>: <span class="fw-semibold"><?= esc($categoryCount) ?></span> •</p>
-    </div>
-    <div>
-        <p><?= esc(admin_ui('updated_at')) ?>: <span class="fw-semibold"><?= esc($cafe['menu_updated_at'] ?? $cafe['updated_at'] ?? '-') ?> •</span></p>
-    </div>
-    <div class="md:ml-auto">
+        <h5 class="text-lg text-secondary"> <?= esc(admin_ui('pairing_code')) ?>: <?= esc($cafe['code'] ?? '-') ?></h5>
         <p class="mb-0">
-         <?= esc(admin_ui('login_label')) ?>: <strong><?= esc($cafe['username']) ?></strong> • <?= esc(admin_ui('json_url')) ?> <a href="<?= esc($publicJsonUrl) ?>" target="_blank"><?= esc($publicJsonUrl) ?></a>
+            <?= esc(admin_ui('login_label')) ?>: <strong><?= esc($cafe['username']) ?></strong> • <?= esc(admin_ui('json_url')) ?> <a href="<?= esc($publicJsonUrl) ?>" target="_blank"><?= esc($publicJsonUrl) ?></a>
         </p>
     </div>
-</div>
+</article>
 
 <?php
 $groupedItems = [];
@@ -74,6 +98,9 @@ $groupedItems = array_values(array_filter($groupedItems, static fn (array $group
                 </select>
             </div>
             <div class="lg:col-auto">
+                <a href="<?= site_url('admin/menu-items') ?>" class="btn btn-neutral">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-icon lucide-search"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+                </a>
                 <a class="btn btn-primary" href="<?= site_url('admin/menu-items/new') ?>">+ <?= esc(admin_ui('add_menu_item')) ?></a>
             </div>
         </div>

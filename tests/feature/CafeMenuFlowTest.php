@@ -20,6 +20,8 @@ final class CafeMenuFlowTest extends CIUnitTestCase
     {
         parent::setUp();
 
+        Services::resetSingle('qrCodeGenerator');
+
         $db = Database::connect('tests');
 
         if (! self::$schemaReady) {
@@ -45,6 +47,140 @@ final class CafeMenuFlowTest extends CIUnitTestCase
 
         $result->assertRedirect();
         $result->assertRedirectTo('login');
+    }
+
+    public function testNewCategoryAndMenuItemFormsDefaultSortOrderTo100(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+
+        $session = [
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ];
+
+        $categoryForm = $this->withSession($session)->get('admin/categories/new');
+        $menuItemForm = $this->withSession($session)->get('admin/menu-items/new');
+
+        $categoryForm->assertStatus(200);
+        $menuItemForm->assertStatus(200);
+
+        $this->assertStringContainsString('name="sort_order" class="form-control" value="100"', (string) $categoryForm->response()->getBody());
+        $this->assertStringContainsString('name="sort_order" class="form-control" value="100"', (string) $menuItemForm->response()->getBody());
+    }
+
+    public function testEditCategoryAndMenuItemFormsKeepStoredSortOrder(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+        $db->table('cafe_languages')->insert(['cafe_id' => 1, 'language_code' => 'en', 'sort_order' => 1]);
+        $db->table('categories')->insert([
+            'id'         => 1,
+            'cafe_id'    => 1,
+            'sort_order' => 7,
+            'is_active'  => 1,
+        ]);
+        $db->table('menu_items')->insert([
+            'id'           => 1,
+            'cafe_id'      => 1,
+            'category_id'  => 1,
+            'price'        => '12.00',
+            'is_available' => 1,
+            'sort_order'   => 9,
+        ]);
+
+        $session = [
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ];
+
+        $categoryForm = $this->withSession($session)->get('admin/categories/1/edit');
+        $menuItemForm = $this->withSession($session)->get('admin/menu-items/1/edit');
+
+        $categoryForm->assertStatus(200);
+        $menuItemForm->assertStatus(200);
+
+        $this->assertStringContainsString('name="sort_order" class="form-control" value="7"', (string) $categoryForm->response()->getBody());
+        $this->assertStringContainsString('name="sort_order" class="form-control" value="9"', (string) $menuItemForm->response()->getBody());
+    }
+
+    public function testAdminDashboardRendersQrCodeDownloadLink(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $result = $this->withSession([
+            'cafe_id'  => 1,
+            'username' => 'bestcafe',
+        ])->get('admin');
+
+        $result->assertStatus(200);
+        $result->assertSee('Download QR code PNG');
+        $result->assertSee('bestcafe/qr-code.png');
+    }
+
+    public function testPublicQrCodeEndpointDownloadsPngForCafePublicUrl(): void
+    {
+        $db = Database::connect('tests');
+
+        $db->table('cafes')->insert([
+            'id'            => 1,
+            'username'      => 'bestcafe',
+            'phone'         => '+998901234567',
+            'person_name'   => 'Ali',
+            'cafe_name'     => 'Best Cafe',
+            'password_hash' => password_hash('secret123', PASSWORD_DEFAULT),
+            'status'        => 'active',
+        ]);
+
+        $qrGenerator = new class extends \App\Services\QrCodeGenerator {
+            public ?string $data = null;
+
+            public function generatePng(string $data): ?string
+            {
+                $this->data = $data;
+
+                return "\x89PNG\r\n\x1a\nfake-png";
+            }
+        };
+
+        Services::injectMock('qrCodeGenerator', $qrGenerator);
+
+        $result = $this->get('bestcafe/qr-code.png');
+
+        $result->assertStatus(200);
+        $result->assertHeader('Content-Type', 'image/png');
+        $result->assertHeader('Content-Disposition', 'attachment; filename="cafemenu-bestcafe-qr.png"');
+
+        $this->assertSame(site_url('bestcafe'), $qrGenerator->data);
     }
 
     public function testProtectedSuperAdminRouteRedirectsGuests(): void

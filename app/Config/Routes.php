@@ -56,6 +56,7 @@ $routes->group('admin', static function ($routes) {
 });
 
 $routes->get('code/(:num)', 'MenuJsonController::byCode/$1', ['filter' => 'menuthrottle']);
+$routes->get('(:segment)/qr-code.png', 'PublicController::downloadQrCode/$1');
 $routes->get('(:segment)/menu.json', 'MenuJsonController::index/$1', ['filter' => 'menuthrottle']);
 $routes->get('(:segment)/menu', 'MenuJsonController::index/$1', ['filter' => 'menuthrottle']);
 $routes->get('(:segment)', 'PublicController::index/$1');

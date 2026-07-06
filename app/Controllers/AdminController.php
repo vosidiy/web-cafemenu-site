@@ -33,4 +33,5 @@ class AdminController extends BaseController
             'publicJsonUrl'  => site_url($cafe['username'] . '/menu.json'),
         ]);
     }
+
 }

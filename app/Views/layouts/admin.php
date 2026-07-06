@@ -18,7 +18,7 @@
         <div class="d-flex align-items-center">
             <!-- brand -->
             <a href="<?= site_url('admin') ?>" class="hover:opacity-80 d-flex text-decoration-none align-items-center m-0">
-                <div style="font-size:20px;" class="text-orange-800 font-semibold ml-1">
+                <div style="font-size:18px;" class="text-orange-800 font-semibold ml-1">
                     📙 <?= esc(admin_ui('admin_brand')) ?>
                 </div>
             </a>
@@ -40,7 +40,6 @@
                 <li><a class="nav-link" href="<?= site_url('admin/categories') ?>"><?= esc(admin_ui('nav_categories')) ?></a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/menu-items') ?>"><?= esc(admin_ui('nav_menu_items')) ?></a></li>
                 <li><a class="nav-link" href="<?= site_url('admin/settings') ?>"><?= esc(admin_ui('nav_settings')) ?></a></li>
-                <li><a class="nav-link" href="https://www.qrcode-monkey.com/" target="_blank"> QR link ↗ </a></li>
                 <?php if (session('username')): ?>
                 <li><a class="nav-link" href="<?= site_url(session('username')) ?>" target="_blank"><?= esc(admin_ui('open_menu')) ?> ↗</a></li>
                 <?php endif; ?>

@@ -10,7 +10,8 @@ use Throwable;
 
 class FileUploadService
 {
-    private const MAX_IMAGE_DIMENSION = 1200;
+    private const MAX_IMAGE_DIMENSION = 980;
+    private const IMAGE_SAVE_QUALITY = 75;
 
     public function __construct(
         private readonly AdminUiTextCatalogService $adminTexts = new AdminUiTextCatalogService(),
@@ -109,7 +110,7 @@ class FileUploadService
             Services::image(null, null, false)
                 ->withFile($path)
                 ->resize($targetWidth, $targetHeight, true, 'auto')
-                ->save($path, 90);
+                ->save($path, self::IMAGE_SAVE_QUALITY);
         } catch (Throwable $exception) {
             throw new RuntimeException($this->adminTexts->translate('upload_resize_failed'), 0, $exception);
         }

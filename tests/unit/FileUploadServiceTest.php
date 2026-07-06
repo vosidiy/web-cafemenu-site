@@ -52,6 +52,63 @@ final class FileUploadServiceTest extends CIUnitTestCase
         $service->storeUploadedImage($file, 'bestcafe');
     }
 
+    public function testStoreUploadedImageResizesLargeRasterImage(): void
+    {
+        if (! function_exists('imagecreatetruecolor') || ! function_exists('imagejpeg')) {
+            $this->markTestSkipped('GD JPEG support is required for this test.');
+        }
+
+        $sourcePath = tempnam(sys_get_temp_dir(), 'cafemenu-large-upload-');
+        $image = imagecreatetruecolor(1600, 900);
+
+        imagefill($image, 0, 0, imagecolorallocate($image, 240, 180, 120));
+        imagejpeg($image, $sourcePath, 95);
+        imagedestroy($image);
+
+        $file = new class($sourcePath, 'menu.jpg', 'image/jpeg', filesize($sourcePath), UPLOAD_ERR_OK) extends UploadedFile {
+            public function isValid(): bool
+            {
+                return true;
+            }
+
+            public function move(string $targetPath, ?string $name = null, bool $overwrite = false)
+            {
+                $targetPath = rtrim($targetPath, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+
+                if (! is_dir($targetPath)) {
+                    mkdir($targetPath, 0775, true);
+                }
+
+                $name ??= $this->getName();
+                $destination = $targetPath . $name;
+
+                copy($this->path, $destination);
+
+                $this->hasMoved = true;
+                $this->path = $targetPath;
+                $this->name = basename($destination);
+
+                return true;
+            }
+        };
+
+        $service = new FileUploadService();
+        $storedPath = $service->storeUploadedImage($file, 'bestcafe');
+        $storedAbsolutePath = FCPATH . $storedPath;
+
+        try {
+            $this->assertFileExists($storedAbsolutePath);
+
+            $size = getimagesize($storedAbsolutePath);
+
+            $this->assertIsArray($size);
+            $this->assertLessThanOrEqual(1200, max($size[0], $size[1]));
+        } finally {
+            @unlink($sourcePath);
+            @unlink($storedAbsolutePath);
+        }
+    }
+
     public function testAssertMultipartRequestWithinSizeLimitThrowsForOversizedMultipartRequests(): void
     {
         $request = $this->createMock(RequestInterface::class);
